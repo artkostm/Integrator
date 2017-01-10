@@ -24,7 +24,7 @@ object Configuration extends ExtensionId[ConfigExtensionImpl] with ExtensionIdPr
   }
 
   implicit class RichConfigObject(val underlying: ConfigObject) extends AnyVal {
-    def getClazz(path: String) : Class[_ <: Actor] =  getClassFor[Actor](underlying.get(path).render()).get
+    def getClazz(path: String) : Class[_ <: Actor] = getClassFor[Actor](underlying.get(path).unwrapped().toString).get
     def getInt(path: String, default: Option[Int] = None) =
       if (underlying.containsKey(path)) Some(underlying.get(path).render().toInt)
       else default
@@ -34,7 +34,7 @@ object Configuration extends ExtensionId[ConfigExtensionImpl] with ExtensionIdPr
 
     def getClassFor[T: ClassTag](fqcn: String): Try[Class[_ <: T]] =
       Try[Class[_ <: T]]({
-        val c = Class.forName(fqcn, false, ClassLoader.getSystemClassLoader).asInstanceOf[Class[_ <: T]]
+        val c = Class.forName(fqcn).asInstanceOf[Class[_ <: T]]
         val t = implicitly[ClassTag[T]].runtimeClass
         if (t.isAssignableFrom(c)) c else throw new ClassCastException(t + " is not assignable from " + c)
       })
