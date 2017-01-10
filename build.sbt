@@ -9,3 +9,6 @@ val akka_actor = "com.typesafe.akka" % "akka-actor_2.12" % "2.4.16"
 
 libraryDependencies += cnfgs
 libraryDependencies += akka_actor
+
+//managedResourceDirectories in Compile := Seq(baseDirectory.value / "src")
+//includeFilter in managedResources := "*.scala" || "*.conf"
