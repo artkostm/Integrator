@@ -32,7 +32,7 @@ object Configuration extends ExtensionId[ConfigExtensionImpl] with ExtensionIdPr
       if (underlying.containsKey(path)) Some(underlying.get(path).render())
       else default
 
-    def getClassFor[T: ClassTag](fqcn: String): Try[Class[_ <: T]] =
+    private def getClassFor[T: ClassTag](fqcn: String): Try[Class[_ <: T]] =
       Try[Class[_ <: T]]({
         val c = Class.forName(fqcn).asInstanceOf[Class[_ <: T]]
         val t = implicitly[ClassTag[T]].runtimeClass
@@ -47,10 +47,8 @@ class ConfigExtensionImpl(val config: Config) extends Extension {
   val template = Template(config.getOptString("app.template.directory"))
   val netty = Netty(config.getOptString("app.netty.host"), config.getOptInt("app.netty.port"))
 
-  def createRoutes()(implicit system: ActorSystem): Unit = {
-    println(template)
-    println(netty)
-    println(readRoutes())
+  def createRoutes()(implicit system: ActorSystem): Vector[(String, RouteHolder)] = {
+    readRoutes()
   }
 
   private def readRoutes(): Vector[(String, RouteHolder)] = {
