@@ -48,10 +48,6 @@ class ConfigExtensionImpl(val config: Config) extends Extension {
   val netty = Netty(config.getOptString("app.netty.host"), config.getOptInt("app.netty.port"))
 
   def createRoutes()(implicit system: ActorSystem): Vector[(String, RouteHolder)] = {
-    readRoutes()
-  }
-
-  private def readRoutes(): Vector[(String, RouteHolder)] = {
     import configs.syntax._
     import Configuration.RichConfigObject
     val routes = config.get[Any]("routes").map(a => a.asInstanceOf[Vector[(String, ConfigObject)]])
