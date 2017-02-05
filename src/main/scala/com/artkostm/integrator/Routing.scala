@@ -12,13 +12,13 @@ object Routing extends App{
   //println(Path.removeSlashesAtBothEnds(test))
 
   val path = Path(test)
-  path.`match`(Array.empty[String], Map.empty)
+  path.`match`(Array.empty[String], mutable.Map.empty)
 }
 
 case class Path(path: String) {
   val tokens = Path.removeSlashesAtBothEnds(path).split("/")
 
-  def `match`(requestPathTokens: Array[String], params: Map[String, String]): Boolean = {
+  def `match`(requestPathTokens: Array[String], params: mutable.Map[String, String]): Boolean = {
     println(tokens.toList)
     tokens.zipWithIndex.map(Function.tupled((a, b) => {
       println(s"$b)$a")
@@ -31,7 +31,6 @@ case class Path(path: String) {
 
 
 object Path {
-
   def removeSlashesAtBothEnds(path: String): String = {
     ObjectUtil.checkNotNull(path, "path")
 
@@ -56,7 +55,10 @@ trait Router[T] {
 
   def removeTarget(target: T): Unit
 
+  /** Checks if there's any matching route. */
   def anyMatched(requestPathTokens: Array[String]): Boolean
+
+  def route(path: String): RouteResult[T]
 
   def route(requestPathTokens: Array[String]): RouteResult[T]
 
@@ -70,19 +72,29 @@ class OrderlessRouter[T] extends Router[T] {
   override def addRoute(path: String, target: T): OrderlessRouter[T] = {
     val p = Path(path)
     if (routes.contains(p)) return this
-
-    routes + (p -> target)
+    routes += (p -> target)
     addReverseRoute(target, p)
     this
   }
 
-  override def removePath(path: String): Unit = ???
+  override def removePath(path: String): Unit = {
+    val p = Path(path)
+    routes.remove(p).foreach(reverseRoutes.remove(_).foreach(_.remove(p)))
+  }
 
-  override def removeTarget(target: T): Unit = ???
+  override def removeTarget(target: T): Unit = reverseRoutes.remove(target).flatMap(_.map(routes.remove(_)))
 
-  override def anyMatched(requestPathTokens: Array[String]): Boolean = ???
+  override def anyMatched(requestPathTokens: Array[String]): Boolean = {
+    val params = mutable.Map.empty[String, String]
+    routes.keysIterator.exists({params.clear(); _.`match`(requestPathTokens, params)})
+  }
 
-  override def route(requestPathTokens: Array[String]): RouteResult[T] = ???
+  override def route(path: String): RouteResult[T] = route(Path.removeSlashesAtBothEnds(path))
+
+  override def route(requestPathTokens: Array[String]): RouteResult[T] = {
+    val params = mutable.Map.empty[String, String]
+    routes.find({params.clear(); _._1.`match`(requestPathTokens, params)}).map(entry => RouteResult(entry._2, params.toMap, Map.empty)).orNull
+  }
 
   override def path(target: T, params: Any*): String = ???
 
