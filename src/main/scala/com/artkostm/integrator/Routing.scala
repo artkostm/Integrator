@@ -2,6 +2,8 @@ package com.artkostm.integrator
 
 import io.netty.util.internal.ObjectUtil
 
+import scala.collection.mutable
+
 /**
   * Created by arttsiom.chuiko on 12/01/2017.
   */
@@ -39,13 +41,6 @@ object Path {
   }
 }
 
-object RouteResult {
-//  def apply[T](target: T, pathParams: Map[String, String], queryParams: Map[String, List[String]]): RouteResult[T] =
-//    RouteResult(ObjectUtil.checkNotNull(target, "target"),
-//      ObjectUtil.checkNotNull(pathParams, "pathParams"),
-//      ObjectUtil.checkNotNull(queryParams, "queryParams"))
-}
-
 case class RouteResult[T](target: T, pathParams: Map[String, String], queryParams: Map[String, List[String]]) {
   def queryParam(name: String): Option[String] = queryParams.get(name).map(values => values.head)
 
@@ -62,5 +57,37 @@ trait Router[T] {
   def removeTarget(target: T): Unit
 
   def anyMatched(requestPathTokens: Array[String]): Boolean
+
+  def route(requestPathTokens: Array[String]): RouteResult[T]
+
+  def path(target: T, params: Any*): String
 }
 
+class OrderlessRouter[T] extends Router[T] {
+  val routes = mutable.Map.empty[Path, T]
+  private val reverseRoutes = mutable.Map.empty[T, mutable.Set[Path]]
+
+  override def addRoute(path: String, target: T): OrderlessRouter[T] = {
+    val p = Path(path)
+    if (routes.contains(p)) return this
+
+    routes + (p -> target)
+    addReverseRoute(target, p)
+    this
+  }
+
+  override def removePath(path: String): Unit = ???
+
+  override def removeTarget(target: T): Unit = ???
+
+  override def anyMatched(requestPathTokens: Array[String]): Boolean = ???
+
+  override def route(requestPathTokens: Array[String]): RouteResult[T] = ???
+
+  override def path(target: T, params: Any*): String = ???
+
+  private def addReverseRoute(target: T, path: Path): Unit = reverseRoutes.get(target) match {
+    case Some(paths) => paths += path
+    case None => reverseRoutes += (target -> mutable.Set(path))
+  }
+}
