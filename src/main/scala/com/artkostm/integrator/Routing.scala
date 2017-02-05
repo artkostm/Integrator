@@ -38,3 +38,13 @@ object Path {
     path.stripPrefix("/").stripSuffix("/")
   }
 }
+
+trait Router[T] {
+  def addRoute(path: String, target:T): Router[T]
+
+  def removePath(path: String): Unit
+  
+  def removeTarget(target: T): Unit
+
+  def anyMatched(requestPathTokens: Array[String]): Boolean
+}
