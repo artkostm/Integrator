@@ -39,12 +39,31 @@ object Path {
   }
 }
 
+object RouteResult {
+//  def apply[T](target: T, pathParams: Map[String, String], queryParams: Map[String, List[String]]): RouteResult[T] =
+//    RouteResult(ObjectUtil.checkNotNull(target, "target"),
+//      ObjectUtil.checkNotNull(pathParams, "pathParams"),
+//      ObjectUtil.checkNotNull(queryParams, "queryParams"))
+}
+
+case class RouteResult[T](target: T, pathParams: Map[String, String], queryParams: Map[String, List[String]]) {
+  def queryParam(name: String): Option[String] = queryParams.get(name) match {
+    case Some(values) => Some(values.head)
+    case _ => None
+  }
+
+  def param(name: String): Option[String] = pathParams.get(name) orElse queryParam(name)
+
+  def params(name: String): List[String] =  List concat (queryParams.get(name).getOrElse(List.empty), pathParams.get(name))
+}
+
 trait Router[T] {
   def addRoute(path: String, target:T): Router[T]
 
   def removePath(path: String): Unit
-  
+
   def removeTarget(target: T): Unit
 
   def anyMatched(requestPathTokens: Array[String]): Boolean
 }
+
