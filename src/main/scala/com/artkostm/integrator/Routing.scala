@@ -47,10 +47,7 @@ object RouteResult {
 }
 
 case class RouteResult[T](target: T, pathParams: Map[String, String], queryParams: Map[String, List[String]]) {
-  def queryParam(name: String): Option[String] = queryParams.get(name) match {
-    case Some(values) => Some(values.head)
-    case _ => None
-  }
+  def queryParam(name: String): Option[String] = queryParams.get(name).map(values => values.head)
 
   def param(name: String): Option[String] = pathParams.get(name) orElse queryParam(name)
 
