@@ -29,15 +29,8 @@ case class Path(path: String) {
 
 }
 
-
 object Path {
-  def removeSlashesAtBothEnds(path: String): String = {
-    ObjectUtil.checkNotNull(path, "path")
-
-    if (path.isEmpty) return path
-
-    path.stripPrefix("/").stripSuffix("/")
-  }
+  def removeSlashesAtBothEnds(path: String): String = ObjectUtil.checkNotNull(path, "path").stripPrefix("/").stripSuffix("/")
 }
 
 case class RouteResult[T](target: T, pathParams: Map[String, String], queryParams: Map[String, List[String]]) {
@@ -82,7 +75,7 @@ class OrderlessRouter[T] extends Router[T] {
     routes.remove(p).foreach(reverseRoutes.remove(_).foreach(_.remove(p)))
   }
 
-  override def removeTarget(target: T): Unit = reverseRoutes.remove(target).flatMap(_.map(routes.remove(_)))
+  override def removeTarget(target: T): Unit = reverseRoutes.remove(target).foreach(_.map(routes.remove(_)))
 
   override def anyMatched(requestPathTokens: Array[String]): Boolean = {
     val params = mutable.Map.empty[String, String]
@@ -96,10 +89,17 @@ class OrderlessRouter[T] extends Router[T] {
     routes.find({params.clear(); _._1.`match`(requestPathTokens, params)}).map(entry => RouteResult(entry._2, params.toMap, Map.empty)).orNull
   }
 
-  override def path(target: T, params: Any*): String = ???
+  override def path(target: T, params: Any*): String = params.length match {
+    case 0 => path(target, Map.empty)
+    case l if l == 1 && params(0).isInstanceOf[Map[Any, Any]] => pathMap(target, params(0).asInstanceOf[Map[Any, Any]])
+    case l if l % 2 == 1 => throw new IllegalArgumentException(s"Missing value for param: ${params(l - 1)}")
+    case _ => pathMap(target, params.grouped(2).map(list => (list(0), list(1))).toMap)
+  }
 
   private def addReverseRoute(target: T, path: Path): Unit = reverseRoutes.get(target) match {
     case Some(paths) => paths += path
     case None => reverseRoutes += (target -> mutable.Set(path))
   }
+
+  private def pathMap(target: T, params: Map[Any, Any]): String = ???
 }
