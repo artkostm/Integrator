@@ -23,18 +23,30 @@ case class Path(path: String) {
       case l if l == requestPathTokens.length => tokens.zipWithIndex.foreach({
         case (a, i) => {
           val value = requestPathTokens(i)
-          if (a.length > 0 && a.charAt(0) == ':') params += (a -> value)
-          else if (a != value) return false
+          if (a.length > 0 && a.charAt(0) == ':') params += (a.substring(1) -> value) // This is a placeholder
+          else if (a != value) return false // This is a constant
           return true
         }
       })
       case l if l > 0 &&
         tokens(l - 1) == ":*" &&
-        l <= requestPathTokens.length => ???
+        l <= requestPathTokens.length => tokens.iterator.slice(0, tokens.length - 1).zipWithIndex.foreach({
+        case (a, i) => {
+          val value = requestPathTokens(i)
+          if (a.length > 0 && a.charAt(0) == ':') params += (a.substring(1) -> value) // This is a placeholder
+          else if (a != value) return false // This is a constant
+          return true
+        }
+      })
     }
 
+    val b = new StringBuilder(requestPathTokens(tokens.length - 1))
+    for (i <- tokens.length to requestPathTokens.length) {
+      b += '/'
+      b ++= requestPathTokens(i)
+    }
 
-
+    params += ("*" -> b.toString)
     true
   }
 
@@ -116,4 +128,24 @@ class OrderlessRouter[T] extends Router[T] {
 //    reverseRoutes.get(target)
     ""
   }
+}
+
+class MethodlessRouter[T] extends Router[T] {
+  val first = new OrderlessRouter[T]
+  val other = new OrderlessRouter[T]
+  val last = new OrderlessRouter[T]
+  
+  override def addRoute(path: String, target: T): Router[T] = ???
+
+  override def removePath(path: String): Unit = ???
+
+  override def removeTarget(target: T): Unit = ???
+
+  override def anyMatched(requestPathTokens: Array[String]): Boolean = ???
+
+  override def route(path: String): RouteResult[T] = ???
+
+  override def route(requestPathTokens: Array[String]): RouteResult[T] = ???
+
+  override def path(target: T, params: Any*): String = ???
 }
