@@ -81,6 +81,10 @@ trait Router[T] {
   def path(target: T, params: Any*): String
 }
 
+/**
+  * Router that doesn't contain information about HTTP request methods and route matching orders.
+  * @tparam T
+  */
 class OrderlessRouter[T] extends Router[T] {
   val routes = mutable.Map.empty[Path, T]
   private val reverseRoutes = mutable.Map.empty[T, mutable.Set[Path]]
@@ -143,11 +147,25 @@ class MethodlessRouter[T] extends Router[T] {
   val other = new OrderlessRouter[T]
   val last = new OrderlessRouter[T]
 
-  override def addRoute(path: String, target: T): Router[T] = ???
+  def size: Int = first.routes.size + other.routes.size + last.routes.size
 
-  override def removePath(path: String): Unit = ???
+  def addRouteFirst(path: String, target: T): MethodlessRouter[T] = { first.addRoute(path, target); this }
 
-  override def removeTarget(target: T): Unit = ???
+  override def addRoute(path: String, target: T): MethodlessRouter[T] = { other.addRoute(path, target); this }
+
+  def addRouteLast(path: String, target: T): MethodlessRouter[T] = { last.addRoute(path, target); this }
+
+  override def removePath(path: String): Unit = {
+    first.removePath(path)
+    other.removePath(path)
+    last.removePath(path)
+  }
+
+  override def removeTarget(target: T): Unit = {
+    first.removeTarget(target)
+    other.removeTarget(target)
+    last.removeTarget(target)
+  }
 
   override def anyMatched(requestPathTokens: Array[String]): Boolean = ???
 
