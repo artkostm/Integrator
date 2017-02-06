@@ -5,7 +5,7 @@ import io.netty.util.internal.ObjectUtil
 import scala.collection.mutable
 
 /**
-  * Created by arttsiom.chuiko on 12/01/2017.
+  * Created by artsiom.chuiko on 12/01/2017.
   */
 object Routing extends App{
   val test = "/path1/:var/path2/"
@@ -130,11 +130,19 @@ class OrderlessRouter[T] extends Router[T] {
   }
 }
 
+/**
+  * Router that contains information about route matching orders, but doesn't
+  * contain information about HTTP request methods.
+  *
+  * Routes are devided into 3 sections: "first", "last", and "other".
+  * Routes in "first" are matched first, then in "other", then in "last".
+  * @tparam T
+  */
 class MethodlessRouter[T] extends Router[T] {
   val first = new OrderlessRouter[T]
   val other = new OrderlessRouter[T]
   val last = new OrderlessRouter[T]
-  
+
   override def addRoute(path: String, target: T): Router[T] = ???
 
   override def removePath(path: String): Unit = ???
