@@ -19,10 +19,21 @@ case class Path(path: String) {
   val tokens = Path.removeSlashesAtBothEnds(path).split("/")
 
   def `match`(requestPathTokens: Array[String], params: mutable.Map[String, String]): Boolean = {
-    println(tokens.toList)
-    tokens.zipWithIndex.map(Function.tupled((a, b) => {
-      println(s"$b)$a")
-    }))
+    tokens.length match {
+      case l if l == requestPathTokens.length => tokens.zipWithIndex.foreach({
+        case (a, i) => {
+          val value = requestPathTokens(i)
+          if (a.length > 0 && a.charAt(0) == ':') params += (a -> value)
+          else if (a != value) return false
+          return true
+        }
+      })
+      case l if l > 0 &&
+        tokens(l - 1) == ":*" &&
+        l <= requestPathTokens.length => ???
+    }
+
+
 
     true
   }
@@ -82,7 +93,7 @@ class OrderlessRouter[T] extends Router[T] {
     routes.keysIterator.exists({params.clear(); _.`match`(requestPathTokens, params)})
   }
 
-  override def route(path: String): RouteResult[T] = route(Path.removeSlashesAtBothEnds(path))
+  override def route(path: String): RouteResult[T] = route(Path.removeSlashesAtBothEnds(path).split("/"))
 
   override def route(requestPathTokens: Array[String]): RouteResult[T] = {
     val params = mutable.Map.empty[String, String]
@@ -101,5 +112,8 @@ class OrderlessRouter[T] extends Router[T] {
     case None => reverseRoutes += (target -> mutable.Set(path))
   }
 
-  private def pathMap(target: T, params: Map[Any, Any]): String = ???
+  private def pathMap(target: T, params: Map[Any, Any]): String = {
+//    reverseRoutes.get(target)
+    ""
+  }
 }
