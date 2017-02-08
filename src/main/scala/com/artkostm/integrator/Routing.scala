@@ -1,7 +1,7 @@
 package com.artkostm.integrator
 
+import io.netty.handler.codec.http.HttpMethod
 import io.netty.util.internal.ObjectUtil
-import router.Path
 
 import scala.collection.mutable
 
@@ -65,8 +65,8 @@ case class RouteResult[T](target: T, pathParams: Map[String, String], queryParam
   def params(name: String): List[String] =  List concat (queryParams.get(name).getOrElse(List.empty), pathParams.get(name))
 }
 
-trait Router[T] {
-  def addRoute(path: String, target:T): Router[T]
+trait RouterBase[T] {
+  def addRoute(path: String, target:T): RouterBase[T]
 
   def removePath(path: String): Unit
 
@@ -86,7 +86,7 @@ trait Router[T] {
   * Router that doesn't contain information about HTTP request methods and route matching orders.
   * @tparam T
   */
-class OrderlessRouter[T] extends Router[T] {
+class OrderlessRouter[T] extends RouterBase[T] {
   val routes = mutable.Map.empty[Path, T]
   private val reverseRoutes = mutable.Map.empty[T, mutable.Set[Path]]
 
@@ -143,7 +143,7 @@ class OrderlessRouter[T] extends Router[T] {
   * Routes in "first" are matched first, then in "other", then in "last".
   * @tparam T
   */
-class MethodlessRouter[T] extends Router[T] {
+class MethodlessRouter[T] extends RouterBase[T] {
   val first = new OrderlessRouter[T]
   val other = new OrderlessRouter[T]
   val last = new OrderlessRouter[T]
@@ -177,4 +177,49 @@ class MethodlessRouter[T] extends Router[T] {
   override def route(requestPathTokens: Array[String]): Option[RouteResult[T]] = first.route(requestPathTokens) orElse other.route(requestPathTokens) orElse last.route(requestPathTokens)
 
   override def path(target: T, params: Any*): Option[String] = first.path(target, params) orElse other.path(target, params) orElse last.path(target, params)
+}
+
+class Router[T](notFound: T) extends RouterBase[T] {
+  private val routers = mutable.Map.empty[HttpMethod, MethodlessRouter[T]]
+  private val anyMethodRouter = new MethodlessRouter[T]
+
+  def size: Int = routers.values.foldLeft(anyMethodRouter.size) {(s, mr) => mr.size + s}
+
+  def addRouteFirst(method: HttpMethod, path: String, target: T): Router[T] = {
+    getMethodlessRouter(method).addRouteFirst(path, target)
+    this
+  }
+
+  def addRoute(method: HttpMethod, path: String, target: T): Router[T] = {
+    getMethodlessRouter(method).addRoute(path, target)
+    this
+  }
+
+  def addRouteLast(method: HttpMethod, path: String, target: T): Router[T] = {
+    getMethodlessRouter(method).addRouteLast(path, target)
+    this
+  }
+
+  override def removePath(path: String): Unit = { anyMethodRouter.removePath(path); routers.values.foreach(_.removePath(path)) }
+
+  override def removeTarget(target: T): Unit = { anyMethodRouter.removeTarget(target); routers.values.foreach(_.removeTarget(target))}
+
+  override def anyMatched(requestPathTokens: Array[String]): Boolean = ???
+
+  override def route(path: String): Option[RouteResult[T]] = ???
+
+  override def route(requestPathTokens: Array[String]): Option[RouteResult[T]] = ???
+
+  override def path(target: T, params: Any*): Option[String] = ???
+
+  private def getMethodlessRouter(method: HttpMethod): MethodlessRouter[T] = {
+    if (method == null) return anyMethodRouter
+    routers.get(method).getOrElse({
+      val r = new MethodlessRouter[T]
+      routers.put(method, r)
+      r
+    })
+  }
+
+  override def addRoute(path: String, target: T): RouterBase[T] = ??? //do not use
 }
