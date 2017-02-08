@@ -1,6 +1,7 @@
 package com.artkostm.integrator
 
 import io.netty.util.internal.ObjectUtil
+import router.Path
 
 import scala.collection.mutable
 
@@ -74,11 +75,11 @@ trait Router[T] {
   /** Checks if there's any matching route. */
   def anyMatched(requestPathTokens: Array[String]): Boolean
 
-  def route(path: String): RouteResult[T]
+  def route(path: String): Option[RouteResult[T]]
 
-  def route(requestPathTokens: Array[String]): RouteResult[T]
+  def route(requestPathTokens: Array[String]): Option[RouteResult[T]]
 
-  def path(target: T, params: Any*): String
+  def path(target: T, params: Any*): Option[String]
 }
 
 /**
@@ -109,14 +110,14 @@ class OrderlessRouter[T] extends Router[T] {
     routes.keysIterator.exists({params.clear(); _.`match`(requestPathTokens, params)})
   }
 
-  override def route(path: String): RouteResult[T] = route(Path.removeSlashesAtBothEnds(path).split("/"))
+  override def route(path: String): Option[RouteResult[T]] = route(Path.removeSlashesAtBothEnds(path).split("/"))
 
-  override def route(requestPathTokens: Array[String]): RouteResult[T] = {
+  override def route(requestPathTokens: Array[String]): Option[RouteResult[T]] = {
     val params = mutable.Map.empty[String, String]
-    routes.find({params.clear(); _._1.`match`(requestPathTokens, params)}).map(entry => RouteResult(entry._2, params.toMap, Map.empty)).orNull
+    routes.find({params.clear(); _._1.`match`(requestPathTokens, params)}).map(entry => RouteResult(entry._2, params.toMap, Map.empty)).headOption
   }
 
-  override def path(target: T, params: Any*): String = params.length match {
+  override def path(target: T, params: Any*): Option[String] = params.length match {
     case 0 => path(target, Map.empty)
     case l if l == 1 && params(0).isInstanceOf[Map[Any, Any]] => pathMap(target, params(0).asInstanceOf[Map[Any, Any]])
     case l if l % 2 == 1 => throw new IllegalArgumentException(s"Missing value for param: ${params(l - 1)}")
@@ -128,9 +129,9 @@ class OrderlessRouter[T] extends Router[T] {
     case None => reverseRoutes += (target -> mutable.Set(path))
   }
 
-  private def pathMap(target: T, params: Map[Any, Any]): String = {
+  private def pathMap(target: T, params: Map[Any, Any]): Option[String] = {
 //    reverseRoutes.get(target)
-    ""
+    None
   }
 }
 
@@ -167,11 +168,13 @@ class MethodlessRouter[T] extends Router[T] {
     last.removeTarget(target)
   }
 
-  override def anyMatched(requestPathTokens: Array[String]): Boolean = ???
+  override def anyMatched(requestPathTokens: Array[String]): Boolean = first.anyMatched(requestPathTokens) ||
+    other.anyMatched(requestPathTokens) ||
+    last.anyMatched(requestPathTokens)
 
-  override def route(path: String): RouteResult[T] = ???
+  override def route(path: String): Option[RouteResult[T]] = route(Path.removeSlashesAtBothEnds(path).split("/"))
 
-  override def route(requestPathTokens: Array[String]): RouteResult[T] = ???
+  override def route(requestPathTokens: Array[String]): Option[RouteResult[T]] = first.route(requestPathTokens) orElse other.route(requestPathTokens) orElse last.route(requestPathTokens)
 
-  override def path(target: T, params: Any*): String = ???
+  override def path(target: T, params: Any*): Option[String] = first.path(target, params) orElse other.path(target, params) orElse last.path(target, params)
 }
