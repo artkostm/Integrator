@@ -4,6 +4,7 @@ import io.netty.handler.codec.http.HttpMethod
 import io.netty.util.internal.ObjectUtil
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 /**
   * Created by artsiom.chuiko on 12/01/2017.
@@ -222,4 +223,21 @@ class Router[T](notFound: T) extends RouterBase[T] {
   }
 
   override def addRoute(path: String, target: T): RouterBase[T] = ??? //do not use
+}
+
+object Router {
+
+  def targetToString(target: Any): String = target.isInstanceOf[Class] match {
+    case true => target.asInstanceOf[Class].getName
+    case false => target.toString
+  }
+
+  def aggregateRoutes[T](method: String, routes: Map[Path, T], accMethods: ListBuffer[String], accPaths: ListBuffer[String],
+                         accTargets: ListBuffer[String]): Unit = routes.foreach(entry => {
+    accMethods += method
+    accPaths += "/" + entry._1.path
+    accTargets += targetToString(entry._2)
+  })
+
+  def maxLength(coll: List[String]): Int = coll.maxBy(str => str.length).length
 }
