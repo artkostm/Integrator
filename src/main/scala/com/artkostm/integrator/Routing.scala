@@ -9,14 +9,6 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by artsiom.chuiko on 12/01/2017.
   */
-object Routing extends App{
-  val test = "/path1/:var/path2/"
-  //println(Path.removeSlashesAtBothEnds(test))
-
-  val path = Path(test)
-  path.`match`(Array.empty[String], mutable.Map.empty)
-}
-
 case class Path(path: String) {
   val tokens = Path.removeSlashesAtBothEnds(path).split("/")
 
