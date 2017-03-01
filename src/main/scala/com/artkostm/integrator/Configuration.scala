@@ -9,6 +9,10 @@ import scala.util.Try
 /**
   * Created by artsiom.chuiko on 10/01/2017.
   */
+case class Template(directory: Option[String])
+case class Netty(host: Option[String], port: Option[Int])
+case class RouteHolder(clazz: Class[_ <:Actor], name: Option[String], spin: Option[Int] = Some(1))
+
 object Configuration extends ExtensionId[ConfigExtensionImpl] with ExtensionIdProvider {
 
   override def lookup = Configuration
@@ -56,7 +60,3 @@ class ConfigExtensionImpl(val config: Config) extends Extension {
     })
   }
 }
-
-case class Template(directory: Option[String])
-case class Netty(host: Option[String], port: Option[Int])
-case class RouteHolder(clazz: Class[_ <:Actor], name: Option[String], spin: Option[Int] = Some(1))

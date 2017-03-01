@@ -1,30 +1,56 @@
 package com.artkostm.integrator
 
-import akka.actor.{Actor, ActorSystem}
-import akka.event.Logging
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-
-/**
-  * Created by artsiom.chuiko on 10/01/2017.
-  */
-object ConfigExample extends App {
-
-  implicit val actorSystem = ActorSystem("test_system")
-
-  Configuration.get(actorSystem).createRoutes()
-
-  Await.result(actorSystem.terminate(), Duration.create(2, "s"))
-}
-
-class TestActor1 extends Actor {
-  val log = Logging(context.system, this)
-
-  def receive = {
-    case "test" => log.info("received test")
-    case _      => log.info("received unknown message")
-  }
-}
-
-class TestActor2 extends TestActor1
+//import com.typesafe.config.ConfigFactory
+//import com.typesafe.config.Config
+//import classy.config._
+//
+///**
+//  * Created by artsiom.chuiko on 10/01/2017.
+//  */
+//case class Routes(routes: List[RouteHolder])
+//case class Template(directory: Option[String])
+//case class Netty(host: Option[String], port: Option[Int])
+//case class RouteHolder(`class`: Option[String], name: Option[String], spin: Option[Int] = Some(1))
+//object ConfigExample extends App {
+//  val conf =
+//    """
+//      |routes = [
+//      |  GET /path1 {
+//      |    class : com.artkostm.integrator.TestActor1
+//      |    spin: 1
+//      |    name: first
+//      |  },
+//      |
+//      |  GET /path2 {
+//      |    class : "com.artkostm.integrator.TestActor1"
+//      |    name: index
+//      |    spin: 5
+//      |  },
+//      |
+//      |  POST /path1 {
+//      |    class : "com.artkostm.integrator.TestActor2"
+//      |    name: postactor
+//      |  }
+//      |]
+//      |
+//      |app {
+//      |  template {
+//      |    directory = "core/src/test/resources/pages"
+//      |  }
+//      |
+//      |  netty {
+//      |    host : "0.0.0.0"
+//      |    port : 8080
+//      |  }
+//      |}
+//    """.stripMargin
+//
+//  val decodeRoutes: ConfigDecoder[RouteHolder] = readConfig[Option[String]]("class").join(
+//    readConfig[Option[String]]("name")).join(
+//    readConfig[Option[Int]]("spin")).map(RouteHolder.tupled)
+//  val manualDecoder = readConfig[List[Config]]("routes") andThen decodeRoutes.sequence
+//
+//  val rawConfig = ConfigFactory.parseString(conf)
+//
+//  println(manualDecoder(rawConfig))
+//}
