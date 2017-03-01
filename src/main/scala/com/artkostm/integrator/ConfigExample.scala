@@ -1,5 +1,7 @@
 package com.artkostm.integrator
 
+import io.netty.handler.codec.http.HttpMethod
+
 //import com.typesafe.config.ConfigFactory
 //import com.typesafe.config.Config
 //import classy.config._
@@ -11,7 +13,12 @@ package com.artkostm.integrator
 //case class Template(directory: Option[String])
 //case class Netty(host: Option[String], port: Option[Int])
 //case class RouteHolder(`class`: Option[String], name: Option[String], spin: Option[Int] = Some(1))
-//object ConfigExample extends App {
+object ConfigExample extends App {
+  val router = new Router[String]("not found")
+    .get("/articles", "indexHandler")
+    .get("/articles/:id", "showHandler")
+
+  println(router.path(HttpMethod.GET, "indexHandler"))
 //  val conf =
 //    """
 //      |routes = [
@@ -53,4 +60,4 @@ package com.artkostm.integrator
 //  val rawConfig = ConfigFactory.parseString(conf)
 //
 //  println(manualDecoder(rawConfig))
-//}
+}

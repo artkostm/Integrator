@@ -293,12 +293,23 @@ class Router[T](notFound: T) extends RouterBase[T] {
   }
 
   override def addRoute(path: String, target: T): RouterBase[T] = ??? //do not use
+
+  def connect(path: String, target: T): Router[T] = addRoute(CONNECT, path, target)
+  def delete(path: String, target: T): Router[T] = addRoute(DELETE, path, target)
+  def get(path: String, target: T): Router[T] = addRoute(GET, path, target)
+  def head(path: String, target: T): Router[T] = addRoute(HEAD, path, target)
+  def options(path: String, target: T): Router[T] = addRoute(OPTIONS, path, target)
+  def patch(path: String, target: T): Router[T] = addRoute(PATCH, path, target)
+  def post(path: String, target: T): Router[T] = addRoute(POST, path, target)
+  def put(path: String, target: T): Router[T] = addRoute(PUT, path, target)
+  def trace(path: String, target: T): Router[T] = addRoute(TRACE, path, target)
+  def any(path: String, target: T): Router[T] = addRoute(null, path, target)
 }
 
 object Router {
 
-  def targetToString(target: Any): String = target.isInstanceOf[Class] match {
-    case true => target.asInstanceOf[Class].getName
+  def targetToString(target: Any): String = target.isInstanceOf[Class[Any]] match {
+    case true => target.asInstanceOf[Class[Any]].getName
     case false => target.toString
   }
 
