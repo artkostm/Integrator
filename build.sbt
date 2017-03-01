@@ -11,6 +11,3 @@ val netty_all = "io.netty" % "netty-all" % "4.1.6.Final"
 libraryDependencies += cnfgs
 libraryDependencies += akka_actor
 libraryDependencies += netty_all
-
-//managedResourceDirectories in Compile := Seq(baseDirectory.value / "src")
-//includeFilter in managedResources := "*.scala" || "*.conf"
