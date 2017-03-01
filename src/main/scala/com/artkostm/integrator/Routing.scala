@@ -1,5 +1,8 @@
 package com.artkostm.integrator
 
+import java.io.UnsupportedEncodingException
+import java.net.URLEncoder
+
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.util.internal.ObjectUtil
 
@@ -124,7 +127,71 @@ class OrderlessRouter[T] extends RouterBase[T] {
 
   private def pathMap(target: T, params: Map[Any, Any]): Option[String] = {
 //    reverseRoutes.get(target)
-    None
+    val paths = reverseRoutes.get(target)
+    if (paths == null) return null
+    try {
+      // The best one is the one with minimum number of params in the query
+      var bestCandidate: String = null
+      var minQueryParams = Integer.MAX_VALUE
+      var matched = true
+      val usedKeys = ListBuffer.empty[String]
+      for (path <- paths) {
+        matched = true
+        usedKeys.clear()
+        // "+ 16": Just in case the part befor that is 0
+        val initialCapacity = path.head.path.length + 20 * params.size + 16
+        val b = new StringBuilder(initialCapacity)
+        for (token <- path.head.tokens) {
+          b.append('/')
+          if (token.length > 0 && token.charAt(0) == ':') {
+            val key = token.substring(1)
+            val value = params.get(key)
+            if (value == null) matched = false
+            else {
+              usedKeys += key
+              b.append(value.toString)
+            }
+          }
+          else {
+            b.append(token)
+          }
+        }
+        if (matched) {
+          val numQueryParams = params.size - usedKeys.size
+          if (numQueryParams < minQueryParams) {
+            if (numQueryParams > 0) {
+              var firstQueryParam = true
+              params.foreach { entry =>
+                val key: String = entry._1.toString
+                if (!usedKeys.contains(key)) {
+                  if (firstQueryParam) {
+                    b.append('?')
+                    firstQueryParam = false
+                  }
+                  else {
+                    b.append('&')
+                  }
+                  val value: String = entry._2.toString
+                  // May throw UnsupportedEncodingException
+                  b.append(URLEncoder.encode(key, "UTF-8"))
+                  b.append('=')
+                  // May throw UnsupportedEncodingException
+                  b.append(URLEncoder.encode(value, "UTF-8"))
+                }
+              }
+            }
+            bestCandidate = b.toString
+            minQueryParams = numQueryParams
+          }
+        }
+      }
+      return Some(bestCandidate)
+    }
+    catch {
+      case e: UnsupportedEncodingException => {
+        return null
+      }
+    }
   }
 }
 
@@ -203,7 +270,13 @@ class Router[T](notFound: T) extends RouterBase[T] {
 
   override def route(requestPathTokens: Array[String]): Option[RouteResult[T]] = ???
 
-  override def path(target: T, params: Any*): Option[String] = ???
+  override def path(target: T, params: Any*): Option[String] = routers.values
+    .find(_.path(target, params).exists(_ != null))
+    .map(_.path(target, params)).get orElse anyMethodRouter.path(target, params)
+
+  def path(method: HttpMethod, target: T, params: Any*): Option[String] = {
+    
+  }
 
   private def getMethodlessRouter(method: HttpMethod): MethodlessRouter[T] = {
     if (method == null) return anyMethodRouter
