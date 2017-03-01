@@ -274,8 +274,13 @@ class Router[T](notFound: T) extends RouterBase[T] {
     .find(_.path(target, params).exists(_ != null))
     .map(_.path(target, params)).get orElse anyMethodRouter.path(target, params)
 
-  def path(method: HttpMethod, target: T, params: Any*): Option[String] = {
-    
+  def path(method: HttpMethod, target: T, params: Any*): Option[String] = routers.get(method).getOrElse(anyMethodRouter)
+    .path(target, params) orElse anyMethodRouter.path(target, params)
+
+  import HttpMethod._
+  def allAllowedMethods: List[HttpMethod] = anyMethodRouter.size match {
+    case size if size > 0 => List(CONNECT, DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, TRACE)
+    case _ => routers.keys.toList
   }
 
   private def getMethodlessRouter(method: HttpMethod): MethodlessRouter[T] = {
