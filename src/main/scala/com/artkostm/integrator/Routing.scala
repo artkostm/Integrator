@@ -12,6 +12,10 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by artsiom.chuiko on 12/01/2017.
   */
+object Path {
+  def removeSlashesAtBothEnds(path: String): String = ObjectUtil.checkNotNull(path, "path").stripPrefix("/").stripSuffix("/")
+}
+
 case class Path(path: String) {
   val tokens = Path.removeSlashesAtBothEnds(path).split("/")
 
@@ -47,10 +51,6 @@ case class Path(path: String) {
     true
   }
 
-}
-
-object Path {
-  def removeSlashesAtBothEnds(path: String): String = ObjectUtil.checkNotNull(path, "path").stripPrefix("/").stripSuffix("/")
 }
 
 case class RouteResult[T](target: T, pathParams: Map[String, String], queryParams: Map[String, List[String]]) {
