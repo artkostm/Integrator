@@ -1,5 +1,7 @@
 package com.artkostm.integrator.router
 
+import com.artkostm.integrator.router.HttpMethod._
+
 /**
   * Created by artsiom.chuiko on 12/03/2017.
   *
@@ -10,7 +12,7 @@ trait RouteMatcher {
   def anyMatched(requestPathTokens: Array[String]): Boolean
 }
 
-trait HttpMethod {
+sealed trait HttpMethod {
 
 }
 
@@ -27,15 +29,15 @@ object HttpMethod {
 }
 
 object RoutingDsl {
-  def get(): Unit = {}
-  def connect(): Unit = {}
-  def delete(): Unit = {}
-  def head(): Unit = {}
-  def options(): Unit = {}
-  def path(): Unit = {}
-  def post(): Unit = {}
-  def put(): Unit = {}
-  def trace(): Unit = {}
+  def get(): Get = Get()
+  def connect(): Connect = Connect()
+  def delete(): Delete = Delete()
+  def head(): Head = Head()
+  def options(): Options = Options()
+  def path(): Path = Path()
+  def post(): Post = Post()
+  def put(): Put = Put()
+  def trace(): Trace = Trace()
 }
 
 case class RouteResult[+T](target: T, pathPrms: Map[String, String], queryPrms: Map[String, List[String]]) {
