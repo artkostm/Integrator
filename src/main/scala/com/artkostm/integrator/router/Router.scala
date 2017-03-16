@@ -12,32 +12,38 @@ trait RouteMatcher {
   def anyMatched(requestPathTokens: Array[String]): Boolean
 }
 
-sealed trait HttpMethod {
+sealed trait TargetHandler[+T] {
+  def >>[T](f: => T)
+}
 
+sealed trait HttpMethod[+T] extends TargetHandler[T]{
+  def /(path: String): TargetHandler[T] = this
+
+  override def >>[T](f: => T) = f
 }
 
 object HttpMethod {
-  case class Get() extends HttpMethod
-  case class Connect() extends HttpMethod
-  case class Delete() extends HttpMethod
-  case class Head() extends HttpMethod
-  case class Options() extends HttpMethod
-  case class Path() extends HttpMethod
-  case class Post() extends HttpMethod
-  case class Put() extends HttpMethod
-  case class Trace() extends HttpMethod
+  case class Get[+T]() extends HttpMethod[T]
+  case class Connect[+T]() extends HttpMethod[T]
+  case class Delete[+T]() extends HttpMethod[T]
+  case class Head[+T]() extends HttpMethod[T]
+  case class Options[+T]() extends HttpMethod[T]
+  case class Path[+T]() extends HttpMethod[T]
+  case class Post[+T]() extends HttpMethod[T]
+  case class Put[+T]() extends HttpMethod[T]
+  case class Trace[+T]() extends HttpMethod[T]
 }
 
 object RoutingDsl {
-  def get(): Get = Get()
-  def connect(): Connect = Connect()
-  def delete(): Delete = Delete()
-  def head(): Head = Head()
-  def options(): Options = Options()
-  def path(): Path = Path()
-  def post(): Post = Post()
-  def put(): Put = Put()
-  def trace(): Trace = Trace()
+  def get[T](): Get[T] = Get()
+  def connect[T](): Connect[T] = Connect()
+  def delete[T](): Delete[T] = Delete()
+  def head[T](): Head[T] = Head()
+  def options[T](): Options[T] = Options()
+  def path[T](): Path[T] = Path()
+  def post[T](): Post[T] = Post()
+  def put[T](): Put[T] = Put()
+  def trace[T](): Trace[T] = Trace()
 }
 
 case class RouteResult[+T](target: T, pathPrms: Map[String, String], queryPrms: Map[String, List[String]]) {
