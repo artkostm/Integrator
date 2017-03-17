@@ -13,18 +13,17 @@ trait RouteMatcher {
 }
 
 sealed trait TargetHandler[+T] {
-  def >>[S >: T](f: => S): TargetHandler[S]
+  def >>[S >: T](f: => S): Route
 }
 
-case class WithPath(path: String)
-//case class WithTargetHandler[T](target: Handler[T])
-
-sealed trait HttpMethod[+T] extends TargetHandler[T] { self =>
+sealed trait HttpMethod[+T] extends TargetHandler[T] with Route { self =>
 
   def /(path: String): TargetHandler[T] = self
 
   override def >>[S >: T](f: => S) = self
 }
+
+sealed trait Route
 
 object HttpMethod {
   case class Get[+T]() extends HttpMethod[T]
@@ -38,6 +37,19 @@ object HttpMethod {
   case class Trace[+T]() extends HttpMethod[T]
 }
 
+trait MethodConcatenation {
+
+}
+
+trait Router[+T] {
+  def print(): Unit
+}
+case class StandardRouter[+T](routes: List[Route]) extends Router[T] {
+  override def print(): Unit = routes.foreach { route =>
+    println(s"$route")
+  }
+}
+
 object RoutingDsl {
   def get[T](): Get[T] = Get()
   def connect[T](): Connect[T] = Connect()
@@ -49,7 +61,7 @@ object RoutingDsl {
   def put[T](): Put[T] = Put()
   def trace[T](): Trace[T] = Trace()
 
-  def router() = {}
+  def router[T](f: => List[Route]): Router[T] = StandardRouter(f)
 }
 
 case class RouteResult[+T](target: T, pathPrms: Map[String, String], queryPrms: Map[String, List[String]]) {

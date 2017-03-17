@@ -1,15 +1,21 @@
 package com.artkostm.integrator
 
+import com.artkostm.integrator.router.StandardRouter
+
 /**
   * Created by artsiom.chuiko on 10/01/2017.
   */
 object ConfigExample extends App {
   import com.artkostm.integrator.router.RoutingDsl._
-  val t = get[String] / "/path/" >> {
-    ""
+  val r = router[String] {
+    (get / "/path/" >> {
+      ""
+    })::(get / "/path/" >> {
+      ""
+    })::Nil
   }
 
-  println(t.getClass)
+  println(r.asInstanceOf[StandardRouter[String]].routes)
 
   val result = com.artkostm.integrator.router.RouteResult("target", Map("id" -> "32"), Map("score" -> List("32"), "id" -> List("32")))
 
