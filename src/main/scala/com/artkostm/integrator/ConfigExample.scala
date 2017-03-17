@@ -5,9 +5,11 @@ package com.artkostm.integrator
   */
 object ConfigExample extends App {
   import com.artkostm.integrator.router.RoutingDsl._
-  get[String] / "" >> {
+  val t = get[String] / "/path/" >> {
     ""
   }
+
+  println(t.getClass)
 
   val result = com.artkostm.integrator.router.RouteResult("target", Map("id" -> "32"), Map("score" -> List("32"), "id" -> List("32")))
 
