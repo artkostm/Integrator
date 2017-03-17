@@ -13,13 +13,17 @@ trait RouteMatcher {
 }
 
 sealed trait TargetHandler[+T] {
-  def >>[T](f: => T)
+  def >>[S >: T](f: => S): TargetHandler[S]
 }
 
-sealed trait HttpMethod[+T] extends TargetHandler[T]{
-  def /(path: String): TargetHandler[T] = this
+case class WithPath(path: String)
+//case class WithTargetHandler[T](target: Handler[T])
 
-  override def >>[T](f: => T) = f
+sealed trait HttpMethod[+T] extends TargetHandler[T] { self =>
+
+  def /(path: String): TargetHandler[T] = self
+
+  override def >>[S >: T](f: => S) = self
 }
 
 object HttpMethod {
@@ -44,6 +48,8 @@ object RoutingDsl {
   def post[T](): Post[T] = Post()
   def put[T](): Put[T] = Put()
   def trace[T](): Trace[T] = Trace()
+
+  def router() = {}
 }
 
 case class RouteResult[+T](target: T, pathPrms: Map[String, String], queryPrms: Map[String, List[String]]) {
