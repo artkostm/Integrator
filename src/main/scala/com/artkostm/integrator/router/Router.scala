@@ -11,19 +11,20 @@ import com.artkostm.integrator.router.HttpMethod._
 trait RouteMatcher {
   def anyMatched(requestPathTokens: Array[String]): Boolean
 }
-
-sealed trait TargetHandler[+T] {
-  def >>[S >: T](f: => S): Route
-}
-
-sealed trait HttpMethod[+T] extends TargetHandler[T] with Route { self =>
-
-  def /(path: String): TargetHandler[T] = self
-
-  override def >>[S >: T](f: => S) = self
-}
-
 sealed trait Route
+sealed trait TargetHandler[+T] {
+  def ->[S >: T](f: => S): MethodConcatenation[S]
+}
+sealed trait MethodConcatenation[+T] {
+  def |[S >: T](method: MethodConcatenation[S]): MethodConcatenation[S] = this //TODO
+}
+
+sealed trait HttpMethod[+T] extends TargetHandler[T] with MethodConcatenation[T] with Route { self =>
+
+  def /(path: String): TargetHandler[T] = self //TODO
+
+  override def ->[S >: T](f: => S) = self //TODO
+}
 
 object HttpMethod {
   case class Get[+T]() extends HttpMethod[T]
@@ -35,10 +36,6 @@ object HttpMethod {
   case class Post[+T]() extends HttpMethod[T]
   case class Put[+T]() extends HttpMethod[T]
   case class Trace[+T]() extends HttpMethod[T]
-}
-
-trait MethodConcatenation {
-
 }
 
 trait Router[+T] {
@@ -62,6 +59,10 @@ object RoutingDsl {
   def trace[T](): Trace[T] = Trace()
 
   def router[T](f: => List[Route]): Router[T] = StandardRouter(f)
+
+  implicit def concatenationToList[T](concatenation: MethodConcatenation[T]): List[Route] = {
+    null //TODO
+  }
 }
 
 case class RouteResult[+T](target: T, pathPrms: Map[String, String], queryPrms: Map[String, List[String]]) {
@@ -71,3 +72,6 @@ case class RouteResult[+T](target: T, pathPrms: Map[String, String], queryPrms: 
 
   def params(name: String): (List[String], Option[String]) = (queryPrms.getOrElse(name, List.empty), pathPrms.get(name))
 }
+
+case class WithPath(path: String)
+case class WithTarget[T]()
