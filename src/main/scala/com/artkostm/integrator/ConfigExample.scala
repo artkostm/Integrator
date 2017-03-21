@@ -8,11 +8,11 @@ import com.artkostm.integrator.router.StandardRouter
 object ConfigExample extends App {
   import com.artkostm.integrator.router.RoutingDsl._
   val r = router[String] {
-    (get / "/path/" >> {
+    get / "/path/" -> {
       ""
-    })::(get / "/path/" >> {
+    } | get / "/path/" -> {
       ""
-    })::Nil
+    }
   }
 
   println(r.asInstanceOf[StandardRouter[String]].routes)
