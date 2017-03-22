@@ -2,6 +2,8 @@ package com.artkostm.integrator.router
 
 import com.artkostm.integrator.router.HttpMethod._
 
+import scala.collection.mutable.ListBuffer
+
 /**
   * Created by artsiom.chuiko on 12/03/2017.
   *
@@ -16,7 +18,11 @@ sealed trait TargetHandler[+T] {
   def ->[S >: T](f: => S): MethodConcatenation[S]
 }
 sealed trait MethodConcatenation[+T] {
-  def |[S >: T](method: MethodConcatenation[S]): MethodConcatenation[S] = this //TODO
+  var next: Any = _
+  def |[S >: T](method: MethodConcatenation[S]): MethodConcatenation[S] = {
+    next = method
+    this
+  } //TODO
 }
 
 sealed trait HttpMethod[+T] extends TargetHandler[T] with MethodConcatenation[T] with Route { self =>
@@ -42,9 +48,7 @@ trait Router[+T] {
   def print(): Unit
 }
 case class StandardRouter[+T](routes: List[Route]) extends Router[T] {
-  override def print(): Unit = routes.foreach { route =>
-    println(s"$route")
-  }
+  override def print(): Unit = routes.foreach(println)
 }
 
 object RoutingDsl {
@@ -61,7 +65,17 @@ object RoutingDsl {
   def router[T](f: => List[Route]): Router[T] = StandardRouter(f)
 
   implicit def concatenationToList[T](concatenation: MethodConcatenation[T]): List[Route] = {
-    null //TODO
+    val buffer = ListBuffer.empty[Route]
+    getNextConcatenationAsRoute(concatenation, buffer)
+    buffer.toList
+  }
+
+  private def getNextConcatenationAsRoute[T](c: MethodConcatenation[T], buffer: ListBuffer[Route]): Unit = {
+    if (c.next != null && c.next.isInstanceOf[Route]) {
+      val route = c.next.asInstanceOf[Route]
+      buffer += route
+      getNextConcatenationAsRoute(c.next.asInstanceOf[MethodConcatenation[T]], buffer)
+    }
   }
 }
 
