@@ -12,6 +12,8 @@ object ConfigExample extends App {
       ""
     } | get / "/path/" -> {
       ""
+    } | post / "/path/" -> {
+      ""
     }
   }
 

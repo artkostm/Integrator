@@ -22,7 +22,7 @@ sealed trait MethodConcatenation[+T] {
   def |[S >: T](method: MethodConcatenation[S]): MethodConcatenation[S] = {
     next = method
     this
-  } //TODO
+  }
 }
 
 sealed trait HttpMethod[+T] extends TargetHandler[T] with MethodConcatenation[T] with Route { self =>
@@ -71,9 +71,8 @@ object RoutingDsl {
   }
 
   private def getNextConcatenationAsRoute[T](c: MethodConcatenation[T], buffer: ListBuffer[Route]): Unit = {
+    buffer += c.asInstanceOf[Route]
     if (c.next != null && c.next.isInstanceOf[Route]) {
-      val route = c.next.asInstanceOf[Route]
-      buffer += route
       getNextConcatenationAsRoute(c.next.asInstanceOf[MethodConcatenation[T]], buffer)
     }
   }
