@@ -37,11 +37,11 @@ object Configuration extends ExtensionId[ConfigExtensionImpl] with ExtensionIdPr
       else default
 
     private def getClassFor[T: ClassTag](fqcn: String): Try[Class[_ <: T]] =
-      Try[Class[_ <: T]]({
+      Try[Class[_ <: T]] {
         val c = Class.forName(fqcn).asInstanceOf[Class[_ <: T]]
         val t = implicitly[ClassTag[T]].runtimeClass
         if (t.isAssignableFrom(c)) c else throw new ClassCastException(t + " is not assignable from " + c)
-      })
+      }
   }
 }
 
@@ -55,8 +55,8 @@ class ConfigExtensionImpl(val config: Config) extends Extension {
     import configs.syntax._
     import Configuration.RichConfigObject
     val routes = config.get[Any]("routes").map(a => a.asInstanceOf[Vector[(String, ConfigObject)]])
-    routes.value.map(tuple => tuple match {
+    routes.value.map {
       case (s, c) => (s, RouteHolder(c.getClazz("class"), c.getString("name"), c.getInt("spin", Some(1))))
-    })
+    }
   }
 }
