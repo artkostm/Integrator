@@ -14,9 +14,9 @@ import scala.collection.mutable.ListBuffer
 trait RouteMatcher {
   def anyMatched(requestPathTokens: Array[String]): Boolean
 }
-sealed trait Route
-sealed trait TargetHandler[+T] {
-  def ->[S >: T](f: => S): MethodConcatenation[S]
+
+sealed trait Route {
+  def path: String
 }
 
 class |[+T](val curr: MethodConcatenation[T], val prev: MethodConcatenation[T]) extends MethodConcatenation[T]
@@ -25,11 +25,27 @@ sealed trait MethodConcatenation[+T] {
   def |[S >: T](method: MethodConcatenation[S]): MethodConcatenation[S] = new |[S](method, this)
 }
 
+sealed trait TargetHandler[+T] {
+  def ->[S >: T](f: => S): MethodConcatenation[S]
+}
+
 sealed trait HttpMethod[+T] extends TargetHandler[T] with MethodConcatenation[T] with Route { self =>
+  private var pathStr: String = _
+  private var targetHolder: Any = _
 
-  def /(path: String): TargetHandler[T] = self //TODO
+  def target[S>:T]: S = targetHolder.asInstanceOf[S]
 
-  override def ->[S >: T](f: => S) = self //TODO
+  override def path: String = pathStr
+
+  def /(path: String): TargetHandler[T] = {
+    pathStr = path
+    self
+  }
+
+  override def ->[S >: T](f: => S) = {
+    targetHolder = f
+    self
+  }
 }
 
 object HttpMethod {
@@ -48,7 +64,9 @@ trait Router[+T] {
   def print(): Unit
 }
 case class StandardRouter[+T](routes: List[Route]) extends Router[T] {
-  override def print(): Unit = routes.foreach(println)
+  override def print(): Unit = routes.foreach {
+    case route => println(s"$route: ${route.path}")
+  }
 }
 
 object RoutingDsl {
