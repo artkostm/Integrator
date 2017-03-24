@@ -2,6 +2,7 @@ package com.artkostm.integrator.router
 
 import com.artkostm.integrator.router.HttpMethod._
 
+import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -17,12 +18,11 @@ sealed trait Route
 sealed trait TargetHandler[+T] {
   def ->[S >: T](f: => S): MethodConcatenation[S]
 }
+
+class |[+T](val curr: MethodConcatenation[T], val prev: MethodConcatenation[T]) extends MethodConcatenation[T]
+
 sealed trait MethodConcatenation[+T] {
-  var next: Any = _
-  def |[S >: T](method: MethodConcatenation[S]): MethodConcatenation[S] = {
-    next = method
-    this
-  }
+  def |[S >: T](method: MethodConcatenation[S]): MethodConcatenation[S] = new |[S](method, this)
 }
 
 sealed trait HttpMethod[+T] extends TargetHandler[T] with MethodConcatenation[T] with Route { self =>
@@ -67,13 +67,16 @@ object RoutingDsl {
   implicit def concatenationToList[T](concatenation: MethodConcatenation[T]): List[Route] = {
     val buffer = ListBuffer.empty[Route]
     getNextConcatenationAsRoute(concatenation, buffer)
-    buffer.toList
+    buffer.toList.reverse //is particular order necessary?
   }
 
+  @tailrec
   private def getNextConcatenationAsRoute[T](c: MethodConcatenation[T], buffer: ListBuffer[Route]): Unit = {
-    buffer += c.asInstanceOf[Route]
-    if (c.next != null && c.next.isInstanceOf[Route]) {
-      getNextConcatenationAsRoute(c.next.asInstanceOf[MethodConcatenation[T]], buffer)
+    if (c.isInstanceOf[|[T]]) {
+      buffer += c.asInstanceOf[|[T]].curr.asInstanceOf[Route]
+      getNextConcatenationAsRoute(c.asInstanceOf[|[T]].prev, buffer)
+    } else if (c.isInstanceOf[Route]) {
+      buffer += c.asInstanceOf[Route]
     }
   }
 }
