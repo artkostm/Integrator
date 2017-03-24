@@ -8,15 +8,16 @@ import com.artkostm.integrator.router.StandardRouter
 object ConfigExample extends App {
   import com.artkostm.integrator.router.RoutingDsl._
   val r = router[String] {
-    get / "/path/" -> {
+    post / "/path/" -> {
       ""
-    } | get / "/path/" -> {
+    } | connect / "/path/" -> {
       ""
-    } | post / "/path/" -> {
+    } | trace / "" -> "" | head / "/path/" -> {
       ""
     }
   }
 
+  r.print()
   println(r.asInstanceOf[StandardRouter[String]].routes)
 
   val result = com.artkostm.integrator.router.RouteResult("target", Map("id" -> "32"), Map("score" -> List("32"), "id" -> List("32")))
