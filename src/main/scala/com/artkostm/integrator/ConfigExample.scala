@@ -1,5 +1,7 @@
 package com.artkostm.integrator
 
+import cats.Functor
+
 /**
   * Created by artsiom.chuiko on 10/01/2017.
   */
@@ -25,4 +27,11 @@ object ConfigExample extends App {
   println(result.params("id"))
   val (queryP, pathP) = result.params("id")
   println(queryP)
+
+  import cats._
+  import cats.instances.all._
+  println(Functor[List].map(List("qw", "43", "dfff"))(_.length))
+
+  import cats.syntax.functor._
+  println(List("qw", "43", "dfff").fproduct(_.length).toMap)
 }
