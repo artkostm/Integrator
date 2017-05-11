@@ -1,7 +1,5 @@
 package com.artkostm.integrator
 
-import cats.Functor
-
 /**
   * Created by artsiom.chuiko on 10/01/2017.
   */
@@ -34,4 +32,8 @@ object ConfigExample extends App {
 
   import cats.syntax.functor._
   println(List("qw", "43", "dfff").fproduct(_.length).toMap)
+
+  import cats.data._
+  import cats.implicits._
+  ({(_:Int) + 1}.some) ap 5.some
 }
