@@ -33,7 +33,7 @@ sealed trait HttpMethod[+T] extends TargetHandler[T] with MethodConcatenation[T]
   private var pathStr: String = _
   private var targetHolder: Any = _
 
-  def target[S>:T]: S = targetHolder.asInstanceOf[S]
+  def target: T = targetHolder.asInstanceOf[T]
 
   override def path: String = pathStr
 
