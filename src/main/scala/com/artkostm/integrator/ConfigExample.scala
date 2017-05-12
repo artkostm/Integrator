@@ -1,5 +1,7 @@
 package com.artkostm.integrator
 
+import cats._
+import cats.implicits._
 /**
   * Created by artsiom.chuiko on 10/01/2017.
   */
@@ -26,14 +28,14 @@ object ConfigExample extends App {
   val (queryP, pathP) = result.params("id")
   println(queryP)
 
-  import cats._
-  import cats.instances.all._
   println(Functor[List].map(List("qw", "43", "dfff"))(_.length))
 
-  import cats.syntax.functor._
   println(List("qw", "43", "dfff").fproduct(_.length).toMap)
 
-  import cats.data._
-  import cats.implicits._
-  ({(_:Int) + 1}.some) ap 5.some
+
+  println(List({(_:Int) + 1}) ap List(1, 2, 3, 4))
+  println((List(5) |@| List(6)).map(_ + _))
+
+
+  println((5.some |@| 6.some).map(_ + _))
 }
