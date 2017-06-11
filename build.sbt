@@ -13,3 +13,19 @@ libraryDependencies += akka_actor
 libraryDependencies += netty_all
 libraryDependencies += "com.google.guava" % "guava" % "16.0"
 libraryDependencies += "org.typelevel" %% "cats" % "0.9.0"
+
+libraryDependencies += "io.suzaku" %% "diode" % "1.1.2"
+
+//resolvers ++= Seq(
+//  "Sonatype OSS Snapshots" at
+//    "https://oss.sonatype.org/content/repositories/snapshots",
+//  "Sonatype OSS Releases" at
+//    "https://oss.sonatype.org/content/repositories/releases"
+//)
+//libraryDependencies ++= Seq(
+//  "com.storm-enroute" % "macrogl_2.11" % "0.4-SNAPSHOT")
+//
+//enablePlugins(UniversalPlugin)
+//javacOptions in Universal ++= Seq(
+//  "-Djava.library.path=lib/native"
+//)
