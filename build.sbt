@@ -16,7 +16,7 @@ libraryDependencies += "org.typelevel" %% "cats" % "0.9.0"
 
 libraryDependencies += "io.suzaku" %% "diode" % "1.1.2"
 
-libraryDependencies += "org.clapper" % "classutil_2.11" % "1.1.2"
+libraryDependencies += "org.clapper" %% "classutil" % "1.1.2"
 
 //resolvers ++= Seq(
 //  "Sonatype OSS Snapshots" at
