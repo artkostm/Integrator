@@ -14,4 +14,9 @@ object Classes extends App {
   val map = Map("first" -> 1, "second" -> "2")
   val bean = MapToBean(map, true)
   println(bean.getClass)
+
+
+  val finder = ClassFinder()
+  val classes = finder.getClasses // classes is an Iterator[ClassInfo]
+  classes.foreach(println)
 }
