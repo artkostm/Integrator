@@ -2,16 +2,16 @@ name := "Integrator"
 
 version := "1.0"
 
-scalaVersion := "2.12.1"
+scalaVersion := "2.11.8"
 
-val cnfgs = "com.github.kxbmap" % "configs_2.12" % "0.4.4"
-val akka_actor = "com.typesafe.akka" % "akka-actor_2.12" % "2.4.16"
+val cnfgs = "com.github.kxbmap" %% "configs" % "0.4.4"
+val akka_actor = "com.typesafe.akka" %% "akka-actor" % "2.4.16"
 val netty_all = "io.netty" % "netty-all" % "4.1.6.Final"
 
 libraryDependencies += cnfgs
 libraryDependencies += akka_actor
 libraryDependencies += netty_all
-libraryDependencies += "com.google.guava" % "guava" % "16.0"
+libraryDependencies += "com.google.guava" % "guava" % "18.0"
 libraryDependencies += "org.typelevel" %% "cats" % "0.9.0"
 
 libraryDependencies += "io.suzaku" %% "diode" % "1.1.2"
@@ -21,7 +21,7 @@ libraryDependencies += "org.clapper" %% "classutil" % "1.1.2"
 val nd4jVersion = "0.8.0"
 
 libraryDependencies += "org.nd4j" % "nd4j-native-platform" % nd4jVersion
-libraryDependencies += "org.nd4j" % "nd4s_2.11" % nd4jVersion
+libraryDependencies += "org.nd4j" %% "nd4s" % nd4jVersion
 
 //resolvers ++= Seq(
 //  "Sonatype OSS Snapshots" at
