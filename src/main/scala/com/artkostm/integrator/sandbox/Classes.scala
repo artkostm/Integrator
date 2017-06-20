@@ -1,3 +1,5 @@
+import java.io.File
+
 import akka.actor.Actor
 import org.clapper.classutil.{ClassFinder, MapToBean, ScalaObjectToBean, ClassUtil => _c}
 
@@ -18,5 +20,7 @@ object Classes extends App {
 
   val finder = ClassFinder()
   val classes = finder.getClasses // classes is an Iterator[ClassInfo]
-  classes.foreach(println)
+//  classes.foreach(println)
+  val myClasses = ClassFinder.concreteSubclasses("com.artkostm.integrator.Configuration", classes)
+  myClasses.foreach(println)
 }
