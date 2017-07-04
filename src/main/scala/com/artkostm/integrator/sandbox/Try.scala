@@ -16,4 +16,11 @@ object Tr extends App {
   use(Files.newInputStream(path)) { in =>
     //read from stream
   }
+
+  val scores: List[(Int, Int)] = List((5, 3), (6, 6), (7, 10))
+  val alice = scores.fold(0)((acc, entry) => entry match {
+    case (a: Int, b: Int) if a > b => acc.asInstanceOf[Int] + 1
+    case _ => acc.asInstanceOf[Int]
+  })
+  println(s"$alice")
 }
