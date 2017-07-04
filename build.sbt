@@ -23,6 +23,8 @@ val nd4jVersion = "0.8.0"
 libraryDependencies += "org.nd4j" % "nd4j-native-platform" % nd4jVersion
 libraryDependencies += "org.nd4j" %% "nd4s" % nd4jVersion
 
+libraryDependencies += "org.apache.spark" %% "spark-core" % "2.1.1"
+
 //resolvers ++= Seq(
 //  "Sonatype OSS Snapshots" at
 //    "https://oss.sonatype.org/content/repositories/snapshots",
