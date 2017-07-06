@@ -23,7 +23,7 @@ object XOR extends App {
   //Create input
   val actualInput = Nd4j.zeros(1, 2)
   actualInput.putScalar(Array(0, 0), 0)
-  actualInput.putScalar(Array(0, 1), 1)
+  actualInput.putScalar(Array(0, 1), 0)
 
   //Generate output
   val actualOutput = network.output(actualInput)
@@ -41,7 +41,7 @@ object NNUtils {
     val outputLayer = new OutputLayer.Builder().nIn(2).nOut(2).name("Output").activation(Activation.SOFTMAX).build()
 
     val nncBuilder = new NeuralNetConfiguration.Builder()
-    nncBuilder.iterations(60000).learningRate(0.1)
+    nncBuilder.iterations(1000000).learningRate(0.01)
 
     val listBuilder = nncBuilder.list()
     listBuilder.layer(0, inputLayer)
