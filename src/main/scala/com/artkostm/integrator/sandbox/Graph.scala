@@ -9,5 +9,9 @@ object Main extends App {
   implicit val system = ActorSystem("QuickStart")
   implicit val materializer = ActorMaterializer()
 
-  Source(1 to 10)
+  implicit val dispatcher = system.dispatcher
+
+  val future = Source(1 to 10).runForeach(println)
+
+  future.onComplete(_ => system.terminate())
 }
