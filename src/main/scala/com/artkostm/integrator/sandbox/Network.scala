@@ -24,6 +24,8 @@ import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction
 import org.slf4j.{Logger, LoggerFactory}
 
+import scala.collection.mutable.ListBuffer
+
 /**
   * Two-layer MLP for MNIST using DL4J-style NeuralNet
   * model construction pattern.
@@ -71,11 +73,13 @@ object MLPMnistTwoLayerExample extends App {
   val pathToFile = "model2.dat"
   val model = ModelSerializer.restoreMultiLayerNetwork(new FileInputStream(pathToFile))
 
-  val imgInput = new NativeImageLoader(numRows, numColumns, 1).asMatrix(new File("1.jpg"))
+  val imgInput = new NativeImageLoader(numRows, numColumns, 1).asMatrix(new File("7-2.jpg"))
   new ImagePreProcessingScaler(0,1).transform(imgInput)
 
   val imgOutput = model.output(imgInput, false)
+  model.predict(imgInput).foreach(println)
 
   println(s"Output: $imgOutput")
+
 }
 

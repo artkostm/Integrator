@@ -1,5 +1,5 @@
 /**
-  * Created by arttsiom.chuiko on 10/06/2017.
+  * Created by artsiom.chuiko on 10/06/2017.
   */
 //import org.lwjgl.opengl._
 //import org.macrogl._
