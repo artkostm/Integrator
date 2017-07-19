@@ -10,6 +10,9 @@ val netty_all = "io.netty" % "netty-all" % "4.1.6.Final"
 
 libraryDependencies += cnfgs
 libraryDependencies += akka_actor
+libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.3"
+libraryDependencies += "com.typesafe.akka" %% "akka-protobuf" % "2.5.3"
+
 libraryDependencies += netty_all
 libraryDependencies += "com.google.guava" % "guava" % "18.0"
 libraryDependencies += "org.typelevel" %% "cats" % "0.9.0"
