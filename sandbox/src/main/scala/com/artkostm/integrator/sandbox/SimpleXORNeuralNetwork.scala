@@ -1,3 +1,5 @@
+package com.artkostm.integrator.sandbox
+
 import java.io.{File, FileInputStream, FileOutputStream}
 
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration

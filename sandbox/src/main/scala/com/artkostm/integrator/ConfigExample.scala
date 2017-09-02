@@ -6,7 +6,6 @@ import cats.implicits._
   * Created by artsiom.chuiko on 10/01/2017.
   */
 object ConfigExample extends App {
-  import com.artkostm.integrator.router.RoutingDsl._
   val r = router[String] {
     post / "/path/" -> {
       ""

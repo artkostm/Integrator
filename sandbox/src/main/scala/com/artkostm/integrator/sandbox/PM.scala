@@ -1,3 +1,5 @@
+package com.artkostm.integrator.sandbox
+
 /**
   * Created by artsiom.chuiko on 09/06/2017.
   */

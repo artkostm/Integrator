@@ -1,3 +1,5 @@
+package com.artkostm.integrator.sandbox
+
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**

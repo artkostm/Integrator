@@ -1,3 +1,5 @@
+package com.artkostm.integrator.sandbox
+
 import java.io.File
 
 import akka.actor.Actor

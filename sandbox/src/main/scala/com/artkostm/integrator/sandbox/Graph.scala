@@ -1,3 +1,5 @@
+package com.artkostm.integrator.sandbox
+
 import akka.actor.ActorSystem
 import akka.stream._
 import akka.stream.scaladsl.{Balance, Broadcast, Flow, GraphDSL, Merge, RunnableGraph, Sink, Source}

@@ -1,3 +1,5 @@
+package com.artkostm.integrator.sandbox
+
 import java.nio.file.{Files, Paths}
 
 /**
