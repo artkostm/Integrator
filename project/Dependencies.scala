@@ -19,8 +19,9 @@ object Dependencies {
   val nd4s = "org.nd4j" %% "nd4s" % nd4jVersion
   val scalnet = "org.deeplearning4j" %% "scalnet" % nd4jVersion
   val spark_core = "org.apache.spark" %% "spark-core" % "2.1.1"
+  val clump = "io.getclump" %% "clump-scala" % "1.1.0"
 
 
   val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, guava, cats, classutil, reflect)
-  val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core)
+  val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core, clump)
 }
