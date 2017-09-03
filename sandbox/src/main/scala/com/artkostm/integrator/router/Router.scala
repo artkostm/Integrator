@@ -1,5 +1,7 @@
 package com.artkostm.integrator.router
 
+import com.artkostm.integrator.router.HttpMethod._
+
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
