@@ -11,12 +11,18 @@ object RoutingExample extends App {
 
   println(Pet.links("personA", "petB"))
 
-  "/" match {
-    case Root() => println("root")
-    case Pet("","") => println("pet")
-  }
-
   "/people/personA/pets/petB" match {
     case Pet(a, b) => println(s"matches: $a & $b")
   }
+
+  "/persons/personA/pets/petB" match {
+    case Pet(a, b) => println(s"matches: $a & $b")
+  }
+
+  val Retweets = Root / "statuses" / "retweets" / 'id
+
+  def twitter(v: String): String = s":$v"
+
+  println(Retweets.template(twitter))
+  println(Pet.templates(twitter))
 }
