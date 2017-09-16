@@ -5,7 +5,7 @@ object Dependencies {
   val akkaVersion = "2.5.3"
   val nd4jVersion = "0.8.0"
 
-  val reflect = "org.scala-lang" % "scala-reflect" % "2.11.8"
+  val reflect = "org.scala-lang" % "scala-reflect" % "2.12.3"
 
   val cnfgs = "com.github.kxbmap" %% "configs" % "0.4.4"
   val akka_actor = "com.typesafe.akka" %% "akka-actor" % akkaVersion
@@ -22,6 +22,6 @@ object Dependencies {
   val clump = "io.getclump" %% "clump-scala" % "1.1.0"
 
 
-  val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, guava, cats, classutil, reflect)
+  val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, guava, cats, classutil, reflect) //clump needs to be imported as it was not compiled for scala 2.12
   val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core, clump)
 }
