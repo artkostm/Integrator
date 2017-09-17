@@ -7,8 +7,8 @@ import scala.language.implicitConversions
 object Root extends StaticLinx(Vector.empty)
 
 sealed trait Part
-case class Literal(name:String) extends Part
-case class Var(name:String) extends Part
+case class Literal(name: String) extends Part
+case class Var(name: String) extends Part
 
 object Linx {
 
@@ -33,20 +33,19 @@ object Linx {
     }
   }
 
-  class VarOps[A, X](l:Linx[A, Option[X]]) extends UriOps {
-    def apply(a:A) = l.links(a).head
-
+  class VarOps[A, X](l: Linx[A, Option[X]]) extends UriOps {
+    def apply(a: A) = l.links(a).head
     def uri(base: URI, a: A): URI = expandToUri(base, apply(a))
   }
 
-  implicit def VarOps[A, X](l:Linx[A, Option[X]]) = new VarOps[A, X](l)
+  implicit def VarOps[A, X](l: Linx[A, Option[X]]) = new VarOps[A, X](l)
 
-  class NoVarOps[X](l:Linx[Unit, X]) extends UriOps {
+  class NoVarOps[X](l: Linx[Unit, X]) extends UriOps {
     def apply() = l.links(()).head
-    def uri(base: URI) = expandToUri(base, apply())
+    def uri(base: URI): URI = expandToUri(base, apply())
   }
 
-  implicit def NoVarOps[X](l:Linx[Unit, X]) = new NoVarOps[X](l)
+  implicit def NoVarOps[X](l: Linx[Unit, X]) = new NoVarOps[X](l)
 }
 
 sealed trait Linx[A, X] {
@@ -54,39 +53,39 @@ sealed trait Linx[A, X] {
   def split(s: String) =
     s.split("/").filterNot(_.isEmpty).toList
 
-  def links(a:A) = elements(a).map(_.mkString("/", "/", ""))
+  def links(a: A) = elements(a).map(_.mkString("/", "/", ""))
 
-  def / [B](s:Symbol)(implicit param:LinxParam[A, B]):Linx[B, Option[B]] =
+  def / [B](s: Symbol)(implicit param: LinxParam[A, B]): Linx[B, Option[B]] =
     new VariableLinx(this, param, Vector.empty, s)
 
-  def | (or:Linx[A, X])(implicit matcher:UnapplyMatch[X]):Linx[A, X] =
+  def | (or: Linx[A, X])(implicit matcher: UnapplyMatch[X]): Linx[A, X] =
     new UnionLinx(this, or, matcher)
 
-  def / (name:String):Linx[A, X]
+  def / (name: String): Linx[A, X]
 
-  def elements(a:A):Stream[Vector[String]]
+  def elements(a: A): Stream[Vector[String]]
 
-  def extract(seq:List[String]):Stream[(A, List[String])]
+  def extract(seq: List[String]): Stream[(A, List[String])]
 
-  def unapply(s:String):X
+  def unapply(s: String): X
 
-  def parts:Stream[Vector[Part]]
+  def parts: Stream[Vector[Part]]
 
-  def templates(render:String => String):Stream[String] =
+  def templates(render: String => String): Stream[String] =
     parts.map(_.map {
       case Literal(l) => l
       case Var(v) => render(v)
     }.mkString("/", "/", ""))
 
-  def template(render:String => String):String =
+  def template(render: String => String): String =
     templates(render).head
 
   // rfc6570 uri template
   override def toString = template("{" + _ + "}")
 }
 
-class StaticLinx (val static:Vector[String]) extends Linx[Unit, Boolean]{
-  def unapply(s:String) = extract(split(s)).exists(_._2.isEmpty)
+class StaticLinx(val static: Vector[String]) extends Linx[Unit, Boolean]{
+  def unapply(s: String) = extract(split(s)).exists(_._2.isEmpty)
 
   def /(name: String) = new StaticLinx(static ++ split(name))
 
@@ -98,7 +97,7 @@ class StaticLinx (val static:Vector[String]) extends Linx[Unit, Boolean]{
   def parts = Stream(static.map(Literal))
 }
 
-class VariableLinx[P, A] (parent:Linx[P, _], param:LinxParam[P, A], static:Vector[String], symbol:Symbol) extends Linx[A, Option[A]]{
+class VariableLinx[P, A](parent: Linx[P, _], param: LinxParam[P, A], static: Vector[String], symbol: Symbol) extends Linx[A, Option[A]]{
   def /(name: String) =
     new VariableLinx(parent, param, static ++ split(name), symbol)
 
@@ -111,12 +110,12 @@ class VariableLinx[P, A] (parent:Linx[P, _], param:LinxParam[P, A], static:Vecto
     (p, head :: tail) <- parent.extract(seq) if tail.startsWith(static)
   } yield (param.next(p, head), tail.drop(static.size))
 
-  def unapply(s:String) = (for { (a, Nil) <- extract(split(s)) } yield a).headOption
+  def unapply(s: String) = (for { (a, Nil) <- extract(split(s)) } yield a).headOption
 
   def parts = parent.parts.map(_ ++ (Var(symbol.name) +: static.map(Literal)))
 }
 
-class UnionLinx[A, X] (first:Linx[A, X], next:Linx[A, X], matcher:UnapplyMatch[X]) extends Linx[A, X]{
+class UnionLinx[A, X](first: Linx[A, X], next: Linx[A, X], matcher: UnapplyMatch[X]) extends Linx[A, X]{
   def /(name: String) = new UnionLinx(first / name, next / name, matcher)
 
   def elements(a: A) = first.elements(a) #::: next.elements(a)
@@ -132,7 +131,7 @@ class UnionLinx[A, X] (first:Linx[A, X], next:Linx[A, X], matcher:UnapplyMatch[X
   def parts = first.parts #::: next.parts
 }
 
-sealed case class UnapplyMatch[X](is:X => Boolean)
+sealed case class UnapplyMatch[X](is: X => Boolean)
 
 object UnapplyMatch {
   implicit val boolean = UnapplyMatch[Boolean](identity)
