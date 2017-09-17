@@ -23,5 +23,5 @@ object Dependencies {
 
 
   val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, guava, cats, classutil, reflect) //clump needs to be imported as it was not compiled for scala 2.12
-  val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core, clump)
+  val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core, clump, "no.arktekk" %% "linx" % "0.4")
 }
