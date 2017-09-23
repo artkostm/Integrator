@@ -11,7 +11,7 @@ object Dependencies {
   val akka_actor = "com.typesafe.akka" %% "akka-actor" % akkaVersion
   val akka_stream = "com.typesafe.akka" %% "akka-stream" % akkaVersion
   val akka_protobuf = "com.typesafe.akka" %% "akka-protobuf" % akkaVersion
-  val netty_all = "io.netty" % "netty-all" % "4.1.6.Final"
+  val netty_all = "io.netty" % "netty-all" % "4.1.15.Final"
   val guava = "com.google.guava" % "guava" % "18.0"
   val cats = "org.typelevel" %% "cats" % "0.9.0"
   val classutil= "org.clapper" %% "classutil" % "1.1.2"
