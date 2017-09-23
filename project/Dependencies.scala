@@ -12,6 +12,7 @@ object Dependencies {
   val akka_stream = "com.typesafe.akka" %% "akka-stream" % akkaVersion
   val akka_protobuf = "com.typesafe.akka" %% "akka-protobuf" % akkaVersion
   val netty_all = "io.netty" % "netty-all" % "4.1.15.Final"
+  val netty_tcnative = "io.netty" % "netty-tcnative-boringssl-static" % "2.0.6.Final"
   val guava = "com.google.guava" % "guava" % "18.0"
   val cats = "org.typelevel" %% "cats" % "0.9.0"
   val classutil= "org.clapper" %% "classutil" % "1.1.2"
@@ -22,6 +23,6 @@ object Dependencies {
   val clump = "io.getclump" %% "clump-scala" % "1.1.0"
 
 
-  val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, guava, cats, classutil, reflect) //clump needs to be imported as it was not compiled for scala 2.12
+  val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, guava, cats, classutil, reflect, netty_tcnative) //clump needs to be imported as it was not compiled for scala 2.12
   val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core, clump, "no.arktekk" %% "linx" % "0.4")
 }
