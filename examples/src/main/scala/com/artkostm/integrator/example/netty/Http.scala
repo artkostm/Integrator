@@ -42,7 +42,7 @@ class TestRequestHandler extends ChannelInboundHandlerAdapter {
       case m: HttpContent => 
          println(s"=========ALERT")
         ctx.fireChannelRead(msg)
-//        println(s"Content: ${ByteBufUtil.prettyHexDump(m.content())}")
+        println(s"Content: ${ByteBufUtil.prettyHexDump(m.content())}")
        
       case m =>
         println(m.getClass)
