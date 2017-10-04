@@ -30,5 +30,8 @@ support zero-copy or you need to transform the data
     ChunkedNioFile - Similar to ChunkedFile except that it uses FileChannel
     ChunkedStream - Transfers content chunk by chunk from an InputStream
     ChunkedNioStream - Transfers content chunk by chunk from a ReadableByteChannel
+    
+    
+    HTTP 1.0 client does not support chunked response
    */
 }
