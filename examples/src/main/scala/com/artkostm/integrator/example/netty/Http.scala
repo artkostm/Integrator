@@ -14,6 +14,15 @@ import io.netty.handler.codec.http._
 import io.netty.handler.logging.{LogLevel, LoggingHandler}
 import scala.collection.JavaConverters._
 import io.netty.handler.codec.http.multipart.DiskFileUpload
+import akka.stream.scaladsl.Source
+import org.reactivestreams.Subscriber
+import org.reactivestreams.Publisher
+import akka.stream.scaladsl.Sink
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Flow
+import akka.stream.Supervision
+import akka.stream.ActorMaterializerSettings
 
 @Sharable
 class TestRequestHandler extends ChannelInboundHandlerAdapter {
@@ -42,7 +51,7 @@ class TestRequestHandler extends ChannelInboundHandlerAdapter {
       case m: HttpContent => 
          println(s"=========ALERT")
         ctx.fireChannelRead(msg)
-        println(s"Content: ${ByteBufUtil.prettyHexDump(m.content())}")
+        //println(s"Content: ${ByteBufUtil.prettyHexDump(m.content())}")
        
       case m =>
         println(m.getClass)
@@ -103,15 +112,41 @@ object TestRequestHandler2 extends ChannelInboundHandlerAdapter {
 }
 
 @Sharable
-object HttpDuplex extends ChannelDuplexHandler {
+object HttpDuplex extends ChannelDuplexHandler with Publisher[HttpContent] {
+  implicit val system = ActorSystem() 
+  val decider: Supervision.Decider = {
+    case e: Exception =>
+      println(s"Exception handled, recovering stream: ${e.getMessage}, exception: $e")
+      Supervision.Restart
+    case some => 
+      println(s"UNEXPECTED: $some")
+      Supervision.Stop
+  }
+  implicit val materializer = ActorMaterializer(ActorMaterializerSettings(system).withSupervisionStrategy(decider))
+  
+  val source = Source.fromPublisher(this)
+      .map(_.content)
+      .to(Sink.foreach(ByteBufUtil.prettyHexDump(_)))
+  val result = source.run
+  var subscriber: Subscriber[_ >: HttpContent] = _
   override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any) {
     println(s"=========DUPLEX(CR): $msg - class ${msg.getClass.getName}")
+    if (msg.isInstanceOf[HttpContent]) {
+      println(s"BEFORE onNext: $msg")
+      subscriber.onNext(msg.asInstanceOf[HttpContent])
+    }
     ctx.fireChannelRead(msg)
   }
   
   override def write(ctx: ChannelHandlerContext, msg: scala.Any, promise: ChannelPromise) {
     println(s"=========DUPLEX(W): $msg - class ${msg.getClass.getName}, promise - $promise - ${promise.getClass.getName}")
     ctx.writeAndFlush(msg, promise)
+  }
+  
+  override def subscribe(sub: Subscriber[_ >: HttpContent]): Unit = {
+    println(s"Subscriber: $sub")
+    println(s"SELF: $this")
+    subscriber = sub
   }
 }
 
