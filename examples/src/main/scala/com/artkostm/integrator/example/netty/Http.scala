@@ -23,46 +23,37 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
 import akka.stream.Supervision
 import akka.stream.ActorMaterializerSettings
+import java.nio.channels.FileChannel
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption
+import java.io.File
+import io.netty.handler.stream.ChunkedNioFile
+import java.io.RandomAccessFile
+import io.netty.util.ReferenceCountUtil
+import io.netty.handler.stream.ChunkedFile
+import io.netty.handler.ssl.SslHandler
 
 @Sharable
-class TestRequestHandler extends ChannelInboundHandlerAdapter {
+class HttpStaticFileRequestHandler extends ChannelInboundHandlerAdapter {
   override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any): Unit = {
-    msg match {
-      case m: HttpRequest =>
-        print(m.method().name())
-        if (m.method() == HttpMethod.GET) {
-          val headers = new DefaultHttpHeaders(true)
-          headers.add(HttpHeaderNames.LOCATION, "https://google.com")
-          val resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-            HttpResponseStatus.MOVED_PERMANENTLY,
-            Unpooled.buffer(0),
-            headers,
-            EmptyHttpHeaders.INSTANCE
-          )
-
-          ctx.writeAndFlush(resp)
+    
+    val file = new File("static.pdf")
+        val headers = new DefaultHttpHeaders(true)
+        headers.add(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED)
+        headers.add(HttpHeaderNames.CONTENT_TYPE, "application/pdf")
+        headers.add(HttpHeaderNames.CONTENT_LENGTH, file.length())
+        val resp = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, headers)
+        val raf = new RandomAccessFile(file, "r")
+        ctx.write(resp)
+        if (ctx.pipeline().get(classOf[SslHandler]) == null) {
+          val region = new DefaultFileRegion(raf.getChannel(), 0, file.length())
+          ctx.writeAndFlush(region).addListener(ChannelFutureListener.CLOSE)
+        } else {
+          ctx.writeAndFlush(new HttpChunkedInput(new ChunkedFile(raf, 0, file.length(), 8192)))
+            .addListener(ChannelFutureListener.CLOSE)
         }
-        println(s" ${m.uri()}")
-        println(s"${m.headers().entries().asScala.map(h => h.getKey -> h.getValue)}")
-        ctx.fireChannelRead(msg)
-      case m: HttpContent if (m.isInstanceOf[LastHttpContent]) => 
-        println("=========LAST")
-        ctx.fireChannelRead(msg)
-      case m: HttpContent => 
-         println(s"=========ALERT")
-        ctx.fireChannelRead(msg)
-        //println(s"Content: ${ByteBufUtil.prettyHexDump(m.content())}")
-       
-      case m =>
-        println(m.getClass)
-        ctx.fireChannelRead()
-    }
+        
   }
-
-//  override def channelReadComplete(ctx: ChannelHandlerContext): Unit = {
-//    //ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE)
-//    //ctx.fireChannelReadComplete()
-//  }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     cause.printStackTrace()
@@ -80,17 +71,19 @@ object TestRequestHandler2 extends ChannelInboundHandlerAdapter {
         
         println(s"${m.headers().entries().asScala.map(h => h.getKey -> h.getValue)}")
       case m: HttpContent if (m.isInstanceOf[LastHttpContent]) => 
-        val headers = new DefaultHttpHeaders(true)
-          headers.add(HttpHeaderNames.LOCATION, "https://google.com")
-          val resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-            HttpResponseStatus.CREATED,
-            Unpooled.EMPTY_BUFFER,
-            headers,
-            EmptyHttpHeaders.INSTANCE
-          )
-        
-          ctx.write(resp, ctx.voidPromise())
-          ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT).addListener(ChannelFutureListener.CLOSE)
+//        val headers = new DefaultHttpHeaders(true)
+//          headers.add(HttpHeaderNames.LOCATION, "https://google.com")
+//          headers.add(HttpHeaderNames.CONTENT_TYPE, "application/pdf")
+//          val resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+//            HttpResponseStatus.OK,
+//            Unpooled.EMPTY_BUFFER,
+//            headers,
+//            EmptyHttpHeaders.INSTANCE
+//          )
+//        
+//          ctx.write(resp, ctx.voidPromise())
+//          ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT).addListener(ChannelFutureListener.CLOSE)
+      ctx.fireChannelRead(msg)
       case m: HttpContent => 
 //        println(s"Content: ${ByteBufUtil.prettyHexDump(m.content())}")
         println(s"=========ALERT2")
@@ -155,8 +148,7 @@ object ServerApp extends App {
   val allChannels = new DefaultChannelGroup(group.next())
 
   def start(): Unit = {
-    val testHandler = new TestRequestHandler()
-//    val testHandler2 = new TestRequestHandler2()
+    val testHandler = new HttpStaticFileRequestHandler()
     try {
       val bootstrap = new ServerBootstrap()
       bootstrap.group(group)
@@ -172,8 +164,8 @@ object ServerApp extends App {
             ch.pipeline().addLast("logging", new LoggingHandler(LogLevel.TRACE))
             //ch.pipeline().addLast("http-handler", new HttpStreamsServerHandler(Seq[ChannelHandler](testHandler).asJava))
             ch.pipeline().addLast("request-handler", testHandler)
-            ch.pipeline().addLast("request-duplex", HttpDuplex)
-            ch.pipeline().addLast("request-handler2", TestRequestHandler2)
+            //ch.pipeline().addLast("request-duplex", HttpDuplex)
+            //ch.pipeline().addLast("request-handler2", TestRequestHandler2)
           }
         })
       val chFuture = bootstrap.bind().sync()
