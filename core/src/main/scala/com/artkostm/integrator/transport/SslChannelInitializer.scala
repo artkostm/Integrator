@@ -10,8 +10,8 @@ import java.io.File
 
 object SslChannelInitializer {
   lazy val context = {
-    val provider = ??? //read from config
-    SslContextBuilder.forServer(new File("certChainFile"), new File("keyFile")).sslProvider(provider).build()
+    val provider = SslProvider.JDK //read from config
+    SslContextBuilder.forServer(new File("cert.pem"), new File("derenckey.pem"), "061994").sslProvider(provider).build()
   }
 }
 
