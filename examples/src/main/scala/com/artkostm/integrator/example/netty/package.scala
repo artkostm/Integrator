@@ -33,5 +33,11 @@ support zero-copy or you need to transform the data
     
     
     HTTP 1.0 client does not support chunked response
+
+    Requests without a transfer-encoding or content-length header cannot have a body
+        // (see https://tools.ietf.org/html/rfc7230#section-3.3.3). Netty 4 will signal
+        // end-of-message for these requests with an immediate follow up LastHttpContent, so
+        // we aggregate it as to not end up with a chunked request and a Reader that will
+        // only signal EOF that folks are probably not handling anyway.
    */
 }
