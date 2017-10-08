@@ -162,6 +162,7 @@ object ServerApp extends App {
         .localAddress(new InetSocketAddress(8189))
         .childHandler(new SslChannelInitializer(new ChannelInitializer[SocketChannel] {
           override def initChannel(ch: SocketChannel) = {
+            ch.pipeline().addLast(new HttpContentCompressor(0))
             ch.pipeline().addLast("decoder", new HttpRequestDecoder(4096, 8192, 8192))
             ch.pipeline().addLast("encoder", new HttpResponseEncoder())
             ch.pipeline().addLast("decompressor", new HttpContentDecompressor())
