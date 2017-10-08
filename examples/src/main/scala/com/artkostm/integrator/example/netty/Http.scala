@@ -53,7 +53,7 @@ class HttpStaticFileRequestHandler extends ChannelInboundHandlerAdapter {
           val region = new DefaultFileRegion(raf.getChannel(), 0, file.length())
           ctx.writeAndFlush(region).addListener(ChannelFutureListener.CLOSE)
         } else {
-          ctx.writeAndFlush(new HttpChunkedInput(new ChunkedFile(raf, 0, file.length(), 8192)))
+          ctx.writeAndFlush(new HttpChunkedInput(new ChunkedNioFile(raf.getChannel, 0, file.length(), 8192)))
             .addListener(ChannelFutureListener.CLOSE)
         }
         
@@ -162,7 +162,8 @@ object ServerApp extends App {
         .localAddress(new InetSocketAddress(8189))
         .childHandler(new SslChannelInitializer(new ChannelInitializer[SocketChannel] {
           override def initChannel(ch: SocketChannel) = {
-            ch.pipeline().addLast(new HttpContentCompressor(0))
+//            HttpServerExpectContinueHandler
+            ch.pipeline().addLast("compressor", new HttpContentCompressor)
             ch.pipeline().addLast("decoder", new HttpRequestDecoder(4096, 8192, 8192))
             ch.pipeline().addLast("encoder", new HttpResponseEncoder())
             ch.pipeline().addLast("decompressor", new HttpContentDecompressor())
