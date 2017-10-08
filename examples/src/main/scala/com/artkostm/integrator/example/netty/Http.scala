@@ -29,34 +29,60 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.io.File
 
-import io.netty.handler.stream.ChunkedNioFile
+import io.netty.handler.stream.{ChunkedFile, ChunkedNioFile, ChunkedWriteHandler}
 import java.io.RandomAccessFile
 
 import com.artkostm.integrator.transport.SslChannelInitializer
 import io.netty.util.ReferenceCountUtil
-import io.netty.handler.stream.ChunkedFile
 import io.netty.handler.ssl.SslHandler
+
+import scala.util.control.NonFatal
 
 @Sharable
 class HttpStaticFileRequestHandler extends ChannelInboundHandlerAdapter {
   override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any): Unit = {
-    
     val file = new File("/Users/arttsiom.chuiko/git/Integrator/examples/static.pdf")
-        val headers = new DefaultHttpHeaders(true)
-        headers.add(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED)
-        headers.add(HttpHeaderNames.CONTENT_TYPE, "application/pdf")
-        headers.add(HttpHeaderNames.CONTENT_LENGTH, file.length())
-        val resp = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, headers)
-        val raf = new RandomAccessFile(file, "r")
-        ctx.write(resp)
-        if (ctx.pipeline().get(classOf[SslHandler]) == null) {
-          val region = new DefaultFileRegion(raf.getChannel(), 0, file.length())
-          ctx.writeAndFlush(region).addListener(ChannelFutureListener.CLOSE)
-        } else {
-          ctx.writeAndFlush(new HttpChunkedInput(new ChunkedNioFile(raf.getChannel, 0, file.length(), 8192)))
-            .addListener(ChannelFutureListener.CLOSE)
-        }
-        
+    val headers = new DefaultHttpHeaders(true)
+    headers.add(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED)
+    headers.add(HttpHeaderNames.CONTENT_TYPE, "application/pdf")
+    headers.add("Date", System.currentTimeMillis)
+    headers.add("Last-Modified", System.currentTimeMillis)
+    val resp = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, headers)
+    val raf = new RandomAccessFile(file, "r")
+    if (msg.isInstanceOf[HttpRequest]) {
+      val req = msg.asInstanceOf[HttpRequest]
+      val range = req.headers.get(HttpHeaderNames.RANGE)
+
+      println(s"RANGE: $range")
+
+      val (offset, length) = HttpDuplex.getRangeFromRequest(range) match {
+        case None =>
+          (0L, raf.length)  // 0L is for avoiding "type mismatch" compile error
+
+        case Some((startIndex, endIndex)) =>
+          val endIndex2 = if (endIndex >= 0) endIndex else raf.length - 1
+          resp.setStatus(HttpResponseStatus.PARTIAL_CONTENT)
+          resp.headers.set(HttpHeaderNames.ACCEPT_RANGES, HttpHeaderValues.BYTES)
+          resp.headers.set(HttpHeaderNames.CONTENT_RANGE, "bytes " + startIndex + "-" + endIndex2 + "/" + raf.length)
+          (startIndex, endIndex2 - startIndex + 1)
+      }
+
+      HttpUtil.setContentLength(resp, length)
+
+      ctx.write(resp)
+      if (ctx.pipeline().get(classOf[SslHandler]) == null) {
+        val region = new DefaultFileRegion(raf.getChannel(), 0, file.length())
+        ctx.write(region)
+      } else {
+        ctx.write(new HttpChunkedInput(new ChunkedNioFile(raf.getChannel, offset, length, 8192))).addListener(new ChannelFutureListener {
+          def operationComplete(f: ChannelFuture) { raf.close() }
+        })
+      }
+      val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT, ctx.voidPromise())
+      if (msg.isInstanceOf[HttpRequest] && !HttpUtil.isKeepAlive(msg.asInstanceOf[HttpRequest])) {
+        future.addListener(ChannelFutureListener.CLOSE)
+      }
+    }
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
@@ -145,6 +171,36 @@ object HttpDuplex extends ChannelDuplexHandler with Publisher[HttpContent] {
     println(s"SELF: $this")
     subscriber = sub
   }
+
+  private[netty] def getRangeFromRequest(spec: String): Option[(Long, Long)] = {
+    try {
+      if (spec == null) {
+        None
+      } else {
+        if (spec.length <= 6) {
+          None
+        } else {
+          val range = spec.substring(6)  // Skip "bytes="
+          val se    = range.split('-')
+          if (se.length == 2) {
+            val s = se(0).toLong
+            val e = se(1).toLong
+            Some((s, e))
+          } else if (se.length != 1) {
+            None
+          } else {
+            val s = se(0).toLong
+            val e = -1L
+            Some((s, e))
+          }
+        }
+      }
+    } catch {
+      case NonFatal(e) =>
+        println("Unsupported Range spec: " + spec)
+        None
+    }
+  }
 }
 
 object ServerApp extends App {
@@ -169,6 +225,7 @@ object ServerApp extends App {
             ch.pipeline().addLast("decompressor", new HttpContentDecompressor())
             ch.pipeline().addLast("logging", new LoggingHandler(LogLevel.TRACE))
             //ch.pipeline().addLast("http-handler", new HttpStreamsServerHandler(Seq[ChannelHandler](testHandler).asJava))
+            ch.pipeline().addLast(new ChunkedWriteHandler())
             ch.pipeline().addLast("request-handler", testHandler)
             //ch.pipeline().addLast("request-duplex", HttpDuplex)
             //ch.pipeline().addLast("request-handler2", TestRequestHandler2)
