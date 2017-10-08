@@ -70,15 +70,17 @@ class HttpStaticFileRequestHandler extends ChannelInboundHandlerAdapter {
       HttpUtil.setContentLength(resp, length)
 
       ctx.write(resp)
+      var future: ChannelFuture = null
       if (ctx.pipeline().get(classOf[SslHandler]) == null) {
         val region = new DefaultFileRegion(raf.getChannel(), 0, file.length())
         ctx.write(region)
+        future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
       } else {
-        ctx.write(new HttpChunkedInput(new ChunkedNioFile(raf.getChannel, offset, length, 8192))).addListener(new ChannelFutureListener {
+        future = ctx.writeAndFlush(new HttpChunkedInput(new ChunkedNioFile(raf.getChannel, offset, length, 8192))).addListener(new ChannelFutureListener {
           def operationComplete(f: ChannelFuture) { raf.close() }
         })
       }
-      val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT, ctx.voidPromise())
+      //val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT, ctx.voidPromise()) - no need to put it here because chunked input always writes LAST_CONTENT (in case of SSL)
       if (msg.isInstanceOf[HttpRequest] && !HttpUtil.isKeepAlive(msg.asInstanceOf[HttpRequest])) {
         future.addListener(ChannelFutureListener.CLOSE)
       }
@@ -216,7 +218,7 @@ object ServerApp extends App {
         .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
         .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(8 * 1024, 32 * 1024))
         .localAddress(new InetSocketAddress(8189))
-        .childHandler(new SslChannelInitializer(new ChannelInitializer[SocketChannel] {
+        .childHandler(new ChannelInitializer[SocketChannel] {
           override def initChannel(ch: SocketChannel) = {
 //            HttpServerExpectContinueHandler
             ch.pipeline().addLast("compressor", new HttpContentCompressor)
@@ -230,7 +232,7 @@ object ServerApp extends App {
             //ch.pipeline().addLast("request-duplex", HttpDuplex)
             //ch.pipeline().addLast("request-handler2", TestRequestHandler2)
           }
-        }))
+        })
       val chFuture = bootstrap.bind().sync()
       chFuture.channel().closeFuture().sync()
     } finally {
