@@ -25,16 +25,20 @@ import akka.stream.scaladsl.Flow
 import akka.stream.Supervision
 import akka.stream.ActorMaterializerSettings
 import java.nio.channels.FileChannel
-import java.nio.file.Path
-import java.nio.file.StandardOpenOption
+import java.nio.file.{Path, Paths, StandardOpenOption}
 import java.io.File
 
 import io.netty.handler.stream.{ChunkedFile, ChunkedNioFile, ChunkedWriteHandler}
 import java.io.RandomAccessFile
 
 import com.artkostm.integrator.transport.SslChannelInitializer
+import com.beachape.filemanagement.Messages.RegisterCallback
+import com.beachape.filemanagement.MonitorActor
+import com.beachape.filemanagement.RegistryTypes.Callback
 import io.netty.util.ReferenceCountUtil
 import io.netty.handler.ssl.SslHandler
+
+import java.nio.file.StandardWatchEventKinds._
 
 import scala.util.control.NonFatal
 
@@ -206,8 +210,19 @@ object HttpDuplex extends ChannelDuplexHandler with Publisher[HttpContent] {
 }
 
 object ServerApp extends App {
-  val group = new NioEventLoopGroup
+  val system = ActorSystem()
+  implicit val dispatcher = system.dispatcher
+  val group = new NioEventLoopGroup(4, dispatcher)
   val allChannels = new DefaultChannelGroup(group.next())
+  val fileMonitorActor = system.actorOf(MonitorActor(concurrency = 2))
+
+  val modifyCallbackDirectory: Callback = { path => println(s"Something was modified in a directory: $path")}
+
+  val desktopFolder = Paths get "/Users/arttsiom.chuiko/Desktop/test"
+  fileMonitorActor ! RegisterCallback(
+    event = ENTRY_MODIFY,
+    path = desktopFolder,
+    callback = modifyCallbackDirectory)
 
   def start(): Unit = {
     val testHandler = new HttpStaticFileRequestHandler()
