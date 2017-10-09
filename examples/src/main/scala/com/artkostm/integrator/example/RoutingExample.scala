@@ -4,7 +4,7 @@ import com.artkostm.integrator.routing._
 
 object RoutingExample extends App {
 
-  val People = Root / "people" | Root / "persons"
+  val People = Root / "persons"
   val Person = People / 'person
   val Pets   = Person / "pets"
   val Pet    = Pets / 'pet
@@ -31,20 +31,30 @@ object RoutingExample extends App {
   println(Retweets.template(twitter))
   println("-------------")
   
-  val url = "/people/personA"
+  val url = "/persons/personA/pets/petB"
   
   def isGoodForYou(result: Any): Boolean = result match {
     case false | None | null => false
     case Some(_) | true | _ => true
   }
   
+  val start = System.currentTimeMillis()
+  
   routes.filter(route => isGoodForYou(route.unapply(url)))
   .map(_.template(twitter)).foreach(println)
+  
+  routes.filter(route => isGoodForYou(route.unapply(url)))
+  .flatMap(_.parts.flatMap(_.toStream)).filter(_ match {
+    case Var(n) => true
+    case unknown => false
+  }).foreach(println)
 
+  println(s"Test[${Pet.extract(List("/persons", "/pets"))}]")
+  println(s"time is ${System.currentTimeMillis() - start}")
   println("-------------")
   val list = Pet.templates(twitter)
   list match {
-    case List(a, b) => s"Got it! $a, $b"
+    case Stream(a, b) => s"Got it! $a, $b"
     case h #:: tl => println(s"And now: $h -> $tl")
   }
 
