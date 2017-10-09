@@ -7,19 +7,21 @@ object RoutingExample extends App {
   val People = Root / "people" | Root / "persons"
   val Person = People / 'person
   val Pets   = Person / "pets"
-  val Pet    = Pets / 'pet / "?p=pap"
+  val Pet    = Pets / 'pet
 
-  println(Pet.links("personA", "petB"))
-  println(People.links())
+//  println(Pet.links("personA", "petB"))
+//  println(People.links())
+  
+  val routes = List(Root, People, Person, Pets, Pet)
 
-  "/people/personA/pets/petB" match {
+  "/people/personA/pets/petB?p=pap" match {
     case Pet(a, b) => println(s"matches: $a & $b")
-    case tt => println(tt)
+    case tt => println(s"SAD: $tt")
   }
 
   "/persons/personA/pets/petB" match {
     case Pet(a, b) => println(s"matches: $a & $b")
-    case tt => println(tt)
+    case tt => println(s"SAD: $tt")
   }
 
   val Retweets = Root / "statuses" / "retweets" / 'id
@@ -28,8 +30,18 @@ object RoutingExample extends App {
 
   println(Retweets.template(twitter))
   println("-------------")
-  Pet.templates(twitter).foreach(println)
+  
+  val url = "/people/personA"
+  
+  def isGoodForYou(result: Any): Boolean = result match {
+    case false | None | null => false
+    case Some(_) | true | _ => true
+  }
+  
+  routes.filter(route => isGoodForYou(route.unapply(url)))
+  .map(_.template(twitter)).foreach(println)
 
+  println("-------------")
   val list = Pet.templates(twitter)
   list match {
     case List(a, b) => s"Got it! $a, $b"
