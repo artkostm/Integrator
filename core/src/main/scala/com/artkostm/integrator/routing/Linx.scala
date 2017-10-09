@@ -50,7 +50,7 @@ object Linx {
 
 sealed trait Linx[A, X] {
 
-  def split(s: String) =
+  protected def split(s: String) =
     s.split("/").filterNot(_.isEmpty).toList
 
   def links(a: A) = elements(a).map(_.mkString("/", "/", ""))
