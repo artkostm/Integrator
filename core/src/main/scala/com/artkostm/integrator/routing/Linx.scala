@@ -9,6 +9,7 @@ object Root extends StaticLinx(Vector.empty)
 sealed trait Part
 case class Literal(name: String) extends Part
 case class Var(name: String) extends Part
+case class Param(name: String) extends Part
 
 object Linx {
 
