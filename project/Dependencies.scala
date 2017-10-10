@@ -22,8 +22,10 @@ object Dependencies {
   val spark_core = "org.apache.spark" %% "spark-core" % "2.1.1"
   val clump = "io.getclump" %% "clump-scala" % "1.1.0"
   val swatcher = "com.beachape.filemanagement" %% "schwatcher" % "0.3.3"
+  val javassist = "org.javassist" % "javassist" % "3.22.0-CR2"
 
 
-  val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, guava, cats, classutil, reflect, netty_tcnative, swatcher) //clump needs to be imported as it was not compiled for scala 2.12
+  val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, 
+	guava, cats, classutil, reflect, netty_tcnative, swatcher, javassist) //clump needs to be imported as it was not compiled for scala 2.12
   val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core, clump, "no.arktekk" %% "linx" % "0.4")
 }
