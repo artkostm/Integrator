@@ -1,6 +1,7 @@
 package com.artkostm.integrator.example
 
 import com.artkostm.integrator.routing._
+import com.artkostm.integrator.routing.Method.Get
 
 object RoutingExample extends App {
 
@@ -49,7 +50,7 @@ object RoutingExample extends App {
     case unknown => false
   }).foreach(println)
 
-  println(s"Test[${Pet.extract(List("/persons", "/pets"))}]")
+  println(s"Test[${Pet.extract(List("persons", "person1", "pets", "pet2")).toList}]")
   println(s"time is ${System.currentTimeMillis() - start}")
   println("-------------")
   val list = Pet.templates(twitter)
@@ -65,4 +66,8 @@ object RoutingExample extends App {
   println(request.query.id)
   println(request.query.search)
   println(request.query.unknown)
+  
+  request.query.some()
+  
+  //Get + Pet ? "param1" & "param2"
 }
