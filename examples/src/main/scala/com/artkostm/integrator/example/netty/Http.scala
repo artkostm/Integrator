@@ -32,9 +32,9 @@ import io.netty.handler.stream.{ChunkedFile, ChunkedNioFile, ChunkedWriteHandler
 import java.io.RandomAccessFile
 
 import com.artkostm.integrator.transport.SslChannelInitializer
-import com.beachape.filemanagement.Messages.RegisterCallback
-import com.beachape.filemanagement.MonitorActor
-import com.beachape.filemanagement.RegistryTypes.Callback
+import com.artkostm.integrator.watcher.Messages.RegisterCallback
+import com.artkostm.integrator.watcher.MonitorActor
+import com.artkostm.integrator.watcher.RegistryTypes.Callback
 import io.netty.util.ReferenceCountUtil
 import io.netty.handler.ssl.SslHandler
 
