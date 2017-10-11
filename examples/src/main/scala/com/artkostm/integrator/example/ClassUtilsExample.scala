@@ -14,6 +14,7 @@ class MyActor {
 }
 object Classes extends App {
   println(_c.classSignature(classOf[MyActor]))
+  println(System.getProperty("java.class.path"))
 //  val actor = new MyActor
 //  val map = Map("first" -> 1, "second" -> "2")
 //  val bean = MapToBean(map, true)
@@ -25,4 +26,5 @@ object Classes extends App {
 //  classes.foreach(println)
   val myClasses = ClassFinder.concreteSubclasses("com.artkostm.integrator.macros.Shutdown", classes)
   myClasses.foreach(println)
+  
 }
