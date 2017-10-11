@@ -26,5 +26,7 @@ object Classes extends App {
 //  classes.foreach(println)
   val myClasses = ClassFinder.concreteSubclasses("com.artkostm.integrator.macros.Shutdown", classes)
   myClasses.foreach(println)
+
+  println(new File("core").getAbsolutePath)
   
 }
