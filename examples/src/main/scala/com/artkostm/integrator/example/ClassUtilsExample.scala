@@ -21,10 +21,18 @@ object Classes extends App {
 //  println(bean.getClass)
 
 
-  val finder = ClassFinder()
-  val classes = finder.getClasses // classes is an Iterator[ClassInfo]
-//  classes.foreach(println)
-  val myClasses = ClassFinder.concreteSubclasses("com.artkostm.integrator.macros.Shutdown", classes)
-  myClasses.foreach(println)
+//  val finder = ClassFinder()
+//  val classes = finder.getClasses // classes is an Iterator[ClassInfo]
+////  classes.foreach(println)
+//  val myClasses = ClassFinder.concreteSubclasses("com.artkostm.integrator.macros.Shutdown", classes)
+//  myClasses.foreach(println)
   
+  import cats.Eval
+//  import cats.instances.all._
+  
+  def factorial(n: BigInt): Eval[BigInt] =
+    if(n == 1) Eval.now(n)
+    else Eval.defer(factorial(n - 1).map(_ * n))
+    
+  println(s"Value:'${factorial(500).value}'")
 }
