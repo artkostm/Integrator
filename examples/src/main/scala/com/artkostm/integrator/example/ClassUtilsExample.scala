@@ -20,12 +20,13 @@ object Classes extends App {
 //  val bean = MapToBean(map, true)
 //  println(bean.getClass)
 
-
 //  val finder = ClassFinder()
 //  val classes = finder.getClasses // classes is an Iterator[ClassInfo]
 ////  classes.foreach(println)
 //  val myClasses = ClassFinder.concreteSubclasses("com.artkostm.integrator.macros.Shutdown", classes)
 //  myClasses.foreach(println)
+
+  println(new File("core").getAbsolutePath)
   
   import cats.Eval
 //  import cats.instances.all._
