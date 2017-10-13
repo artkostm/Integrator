@@ -118,11 +118,11 @@ class VariableLinx[P, A](parent: Linx[P, _], param: LinxParam[P, A], static: Vec
 }
 
 class UnionLinx[A, X](first: Linx[A, X], next: Linx[A, X], matcher: UnapplyMatch[X]) extends Linx[A, X]{
-  def /(name: String) = new UnionLinx(first / name, next / name, matcher)
+  def /(name: String): UnionLinx[A, X] = new UnionLinx(first / name, next / name, matcher)
 
-  def elements(a: A) = first.elements(a) #::: next.elements(a)
+  def elements(a: A): Stream[Vector[String]] = first.elements(a) #::: next.elements(a)
 
-  def extract(seq: List[String]) =
+  def extract(seq: List[String]): Stream[(A, List[String])] =
     first.extract(seq) #::: next.extract(seq)
 
   def unapply(s: String): X = {
@@ -130,7 +130,7 @@ class UnionLinx[A, X](first: Linx[A, X], next: Linx[A, X], matcher: UnapplyMatch
     if(matcher.is(firstX)) firstX else next.unapply(s)
   }
 
-  def parts = first.parts #::: next.parts
+  def parts: Stream[Vector[Part]] = first.parts #::: next.parts
 }
 
 sealed case class UnapplyMatch[X](is: X => Boolean)
