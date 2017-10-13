@@ -11,3 +11,5 @@ case class Query [integrator](params: Map[String, String]) extends Dynamic {
 class Request(params: Map[String, String]) {
   lazy val query = Query(params)
 }
+
+class Response
