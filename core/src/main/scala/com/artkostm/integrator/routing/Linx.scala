@@ -5,6 +5,7 @@ import java.net.URI
 import scala.language.implicitConversions
 
 object Root extends StaticLinx(Vector.empty)
+object * extends StaticLinx(Vector.empty)
 
 sealed trait Part
 case class Literal(name: String) extends Part
@@ -51,10 +52,10 @@ object Linx {
 
 sealed trait Linx[A, X] {
 
-  protected def split(s: String) =
+  protected def split(s: String): List[String] =
     s.split("/").filterNot(_.isEmpty).toList
 
-  def links(a: A) = elements(a).map(_.mkString("/", "/", ""))
+  def links(a: A): Stream[String] = elements(a).map(_.mkString("/", "/", ""))
 
   def / [B](s: Symbol)(implicit param: LinxParam[A, B]): Linx[B, Option[B]] =
     new VariableLinx(this, param, Vector.empty, s)
