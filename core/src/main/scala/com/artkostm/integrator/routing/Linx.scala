@@ -100,21 +100,21 @@ class StaticLinx(val static: Vector[String]) extends Linx[Unit, Boolean]{
 }
 
 class VariableLinx[P, A](parent: Linx[P, _], param: LinxParam[P, A], static: Vector[String], symbol: Symbol) extends Linx[A, Option[A]]{
-  def /(name: String) =
+  def /(name: String): VariableLinx[P, A] =
     new VariableLinx(parent, param, static ++ split(name), symbol)
 
-  def elements(a: A) = {
+  def elements(a: A): Stream[Vector[String]] = {
     val (p, part) = param.previous(a)
     parent.elements(p).map(_ ++ (part +: static))
   }
 
-  def extract(seq: List[String]) = for {
+  def extract(seq: List[String]): Stream[(A, List[String])] = for {
     (p, head :: tail) <- parent.extract(seq) if tail.startsWith(static)
   } yield (param.next(p, head), tail.drop(static.size))
 
-  def unapply(s: String) = (for { (a, Nil) <- extract(split(s)) } yield a).headOption
+  def unapply(s: String): Option[A] = (for { (a, Nil) <- extract(split(s)) } yield a).headOption
 
-  def parts = parent.parts.map(_ ++ (Var(symbol.name) +: static.map(Literal)))
+  def parts: Stream[Vector[Part]] = parent.parts.map(_ ++ (Var(symbol.name) +: static.map(Literal)))
 }
 
 class UnionLinx[A, X](first: Linx[A, X], next: Linx[A, X], matcher: UnapplyMatch[X]) extends Linx[A, X]{
