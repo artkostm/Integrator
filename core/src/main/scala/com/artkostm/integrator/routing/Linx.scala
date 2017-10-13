@@ -87,16 +87,16 @@ sealed trait Linx[A, X] {
 }
 
 class StaticLinx(val static: Vector[String]) extends Linx[Unit, Boolean]{
-  def unapply(s: String) = extract(split(s)).exists(_._2.isEmpty)
+  def unapply(s: String): Boolean = extract(split(s)).exists(_._2.isEmpty)
 
-  def /(name: String) = new StaticLinx(static ++ split(name))
+  def /(name: String): StaticLinx = new StaticLinx(static ++ split(name))
 
-  def elements(a: Unit) = Stream(static)
+  def elements(a: Unit): Stream[Vector[String]] = Stream(static)
 
-  def extract(seq: List[String]) =
+  def extract(seq: List[String]): Stream[(Unit, List[String])] =
     if (seq.startsWith(static)) Stream(((), seq.drop(static.size))) else Stream.empty
 
-  def parts = Stream(static.map(Literal))
+  def parts: Stream[Vector[Part]] = Stream(static.map(Literal))
 }
 
 class VariableLinx[P, A](parent: Linx[P, _], param: LinxParam[P, A], static: Vector[String], symbol: Symbol) extends Linx[A, Option[A]]{
