@@ -1,7 +1,6 @@
 package com.artkostm.integrator.example
 
 import com.artkostm.integrator.routing._
-import com.artkostm.integrator.routing.Method.Get
 
 object RoutingExample extends App {
 
@@ -58,16 +57,9 @@ object RoutingExample extends App {
     case Stream(a, b) => s"Got it! $a, $b"
     case h #:: tl => println(s"And now: $h -> $tl")
   }
-
-  println("WTF!")
-
-  val request = new Request(Map("id" -> "1234", "search" -> "by_name"))
-
-  println(request.query.id)
-  println(request.query.search)
-  println(request.query.unknown)
   
-  request.query.some()
-  
-  //Get + Pet ? "param1" & "param2"
+//  import com.artkostm.integrator.routing.Method._
+//  Get(Pet, { req => 
+//    
+//  })
 }
