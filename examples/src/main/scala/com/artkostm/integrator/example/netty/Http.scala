@@ -45,7 +45,7 @@ import scala.util.control.NonFatal
 @Sharable
 class HttpStaticFileRequestHandler extends ChannelInboundHandlerAdapter {
   override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any): Unit = {
-    val file = new File("/Users/arttsiom.chuiko/git/Integrator/examples/static.pdf")
+    val file = new File("./static.pdf")
     val headers = new DefaultHttpHeaders(true)
     headers.add(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED)
     headers.add(HttpHeaderNames.CONTENT_TYPE, "application/pdf")
@@ -214,15 +214,15 @@ object ServerApp extends App {
   implicit val dispatcher = system.dispatcher
   val group = new NioEventLoopGroup(4, dispatcher)
   val allChannels = new DefaultChannelGroup(group.next())
-  val fileMonitorActor = system.actorOf(MonitorActor(concurrency = 2))
-
-  val modifyCallbackDirectory: Callback = { path => println(s"Something was modified in a directory: $path")}
-
-  val desktopFolder = Paths get "/Users/arttsiom.chuiko/Desktop/test"
-  fileMonitorActor ! RegisterCallback(
-    event = ENTRY_MODIFY,
-    path = desktopFolder,
-    callback = modifyCallbackDirectory)
+//  val fileMonitorActor = system.actorOf(MonitorActor(concurrency = 2))
+//
+//  val modifyCallbackDirectory: Callback = { path => println(s"Something was modified in a directory: $path")}
+//
+//  val desktopFolder = Paths get "/Users/arttsiom.chuiko/Desktop/test"
+//  fileMonitorActor ! RegisterCallback(
+//    event = ENTRY_MODIFY,
+//    path = desktopFolder,
+//    callback = modifyCallbackDirectory)
 
   def start(): Unit = {
     val testHandler = new HttpStaticFileRequestHandler()
