@@ -16,10 +16,11 @@ lazy val core = (project in file("core"))
   )
 
 lazy val examples = (project in file("examples"))
+  .settings(resolvers += Resolver.bintrayRepo("kamon-io", "snapshots"))
   .settings(
     commonSettings,
-    scalaVersion := "2.12.3"
-//    libraryDependencies += "io.kamon" %% "kamon-netty" % "1.0.0-RC1"
+    scalaVersion := "2.12.3",
+    libraryDependencies += "io.kamon" %% "kamon-netty" % "1.0.0-RC1-2d0f0ab696b2949ced5ac8c286f47375e3503016"
   )
   .dependsOn(core)
 
