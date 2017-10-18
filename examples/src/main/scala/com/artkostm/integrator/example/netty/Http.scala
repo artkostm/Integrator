@@ -225,6 +225,8 @@ object ServerApp extends App {
 //    callback = modifyCallbackDirectory)
 
   def start(): Unit = {
+    import kamon.Kamon
+    Kamon.start()
     val testHandler = new HttpStaticFileRequestHandler()
     try {
       val bootstrap = new ServerBootstrap()
