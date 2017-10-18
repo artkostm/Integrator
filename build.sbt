@@ -20,7 +20,8 @@ lazy val examples = (project in file("examples"))
   .settings(
     commonSettings,
     scalaVersion := "2.12.3",
-    libraryDependencies += "io.kamon" %% "kamon-netty" % "1.0.0-RC1-2d0f0ab696b2949ced5ac8c286f47375e3503016"
+    libraryDependencies += "io.kamon" %% "kamon-netty" % "1.0.0-RC1-2d0f0ab696b2949ced5ac8c286f47375e3503016",
+	libraryDependencies += "io.kamon" %% "kamon-core" % "1.0.0-RC1"
   )
   .dependsOn(core)
 
