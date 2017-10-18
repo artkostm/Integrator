@@ -22,10 +22,11 @@ object Dependencies {
   val spark_core = "org.apache.spark" %% "spark-core" % "2.1.1"
   val clump = "io.getclump" %% "clump-scala" % "1.1.0"
   val javassist = "org.javassist" % "javassist" % "3.22.0-CR2"
+  val linx = "no.arktekk" %% "linx" % "0.4"
   //libraryDependencies += "tv.cntt" %% "sclasner" % "1.7.0"
 
 
   val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, 
-	guava, cats, classutil, reflect, netty_tcnative, javassist) //clump needs to be imported as it was not compiled for scala 2.12
-  val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core, clump, "no.arktekk" %% "linx" % "0.4")
+	  guava, cats, classutil, reflect, netty_tcnative, javassist)
+  val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core, clump, linx)
 }
