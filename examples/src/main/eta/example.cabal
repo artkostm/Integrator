@@ -1,0 +1,17 @@
+name:                example
+version:             0.1.0.0
+author:              Artsiom Chuiko
+maintainer:          artkostm@gmail.com
+build-type:          Simple
+extra-source-files:  ChangeLog.md
+cabal-version:       >=1.10
+
+library
+  exposed-modules:     Example.Transform
+  build-depends:       base >=4.8 && <4.9
+                     , aeson
+                     , lens-aeson
+                     , lens
+                     , text
+  default-language:    Haskell2010
+default-extensions: OverloadedStrings
