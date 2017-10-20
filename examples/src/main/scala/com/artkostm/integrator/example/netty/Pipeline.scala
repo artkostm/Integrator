@@ -43,6 +43,10 @@ class Handler1 extends ChannelInboundHandlerAdapter {
 
 }
 
-object Handler1 {
-  def apply(): Kleisli[Option, NettyConfig, Handler1] = Kleisli(_ => Option(new Handler1))
+object Handler1 extends ConfigInjector[Handler1, NettyConfig] {
+  def apply() = Kleisli(_ => Option(new Handler1))
+}
+
+trait ConfigInjector[Injectee, Config] {
+  def apply(): Kleisli[Option, Config, Injectee]
 }
