@@ -19,11 +19,13 @@ lazy val core = (project in file("core"))
 
 lazy val examples = (project in file("examples"))
   .settings(resolvers += Resolver.bintrayRepo("kamon-io", "snapshots"))
+  .settings(resolvers += "BFil Nexus Snapshots" at "http://nexus.b-fil.com/nexus/content/groups/public/")
   .settings(
     commonSettings,
     scalaVersion := "2.12.3",
     libraryDependencies += "io.kamon" %% "kamon-netty" % "1.0.0-RC1-2d0f0ab696b2949ced5ac8c286f47375e3503016",
-	  libraryDependencies += "io.kamon" %% "kamon-core" % "1.0.0-RC1"
+	libraryDependencies += "io.kamon" %% "kamon-core" % "1.0.0-RC1",
+	libraryDependencies += scalext
   )
   .settings(
     mainClass in assembly := Some("com.artkostm.integrator.example.netty.ServerApp")
