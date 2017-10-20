@@ -23,10 +23,12 @@ object Dependencies {
   val clump = "io.getclump" %% "clump-scala" % "1.1.0"
   val javassist = "org.javassist" % "javassist" % "3.22.0-CR2"
   val linx = "no.arktekk" %% "linx" % "0.4"
+  val webjars = "org.webjars" % "webjars-locator-core" % "0.34"
   //libraryDependencies += "tv.cntt" %% "sclasner" % "1.7.0"
+  val scalext = "com.bfil" %% "scalext" % "0.4.0-SNAPSHOT"
 
 
   val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, 
-	  guava, cats, classutil, reflect, netty_tcnative, javassist)
+	  guava, cats, classutil, reflect, netty_tcnative, javassist, webjars)
   val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core, clump, linx)
 }
