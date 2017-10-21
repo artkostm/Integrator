@@ -1,17 +1,17 @@
 package com.artkostm.integrator.example.netty
 
-import scala.concurrent.Promise
+import scala.concurrent.{Await, Future, Promise}
 import com.bfil.scalext.ContextualDsl
-import scala.concurrent.Future
-import scala.concurrent.Future._
-import scala.concurrent.ExecutionContext.global
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
 
 object httpdsl extends App {
   val calc = new Calculator
   
-  calc.performCalculation
+  val f = calc.performCalculation
   
-  Thread.sleep(2000)
+  println(Await.result(f, Duration.Inf))
 }
 
 case class ArithmeticContext(resultPromise: Promise[Double], value: Double)
