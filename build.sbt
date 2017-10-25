@@ -21,14 +21,8 @@ lazy val examples = (project in file("examples"))
   .settings(
     commonSettings,
     scalaVersion := "2.12.3",
-    //libraryDependencies += "io.kamon" %% "kamon-netty" % "1.0.0-RC1-2d0f0ab696b2949ced5ac8c286f47375e3503016",
-	  libraryDependencies += "io.kamon" %% "kamon-core" % "0.6.7",
-    libraryDependencies += "io.kamon" %% "kamon-statsd" % "0.6.7",//0.6.7
-    libraryDependencies += "io.kamon" %% "kamon-scala" % "0.6.7",
-    libraryDependencies += "io.kamon" %% "kamon-system-metrics" % "0.6.7",
-    libraryDependencies += "io.kamon" %% "kamon-akka-2.5" % "0.6.8",
-    libraryDependencies += "org.aspectj" % "aspectjweaver" % "1.8.12",
-	  libraryDependencies += scalext
+	  libraryDependencies += scalext,
+    libraryDependencies ++= kamonDeps
   )
   .settings(
     mainClass in assembly := Some("com.artkostm.integrator.example.netty.ServerApp")

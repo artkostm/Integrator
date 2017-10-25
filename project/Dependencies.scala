@@ -4,6 +4,8 @@ object Dependencies {
 
   val akkaVersion = "2.5.3"
   val nd4jVersion = "0.8.0"
+  val kamonVersion = "0.6.7"
+  val kamonAkkaVersion = "0.6.8"
 
   val reflect = "org.scala-lang" % "scala-reflect" % "2.12.3"
 
@@ -27,7 +29,16 @@ object Dependencies {
   //libraryDependencies += "tv.cntt" %% "sclasner" % "1.7.0"
   val scalext = "com.bfil" %% "scalext" % "0.4.0-SNAPSHOT"
 
+  /** Kamon dependencies */
+  val aspectj = "org.aspectj" % "aspectjweaver" % "1.8.12"
+  val kamonCore = "io.kamon" %% "kamon-core" % kamonVersion
+  val kamonStatsD = "io.kamon" %% "kamon-statsd" % kamonVersion
+  val kamonScala = "io.kamon" %% "kamon-scala" % kamonVersion
+  val kamonAkka = "io.kamon" %% "kamon-akka-2.5" % kamonAkkaVersion
+  val kamonSystem = "io.kamon" %% "kamon-system-metrics" % kamonVersion
+  //libraryDependencies += "io.kamon" %% "kamon-netty" % "1.0.0-RC1-2d0f0ab696b2949ced5ac8c286f47375e3503016",
 
+  val kamonDeps = Seq(aspectj, kamonCore, kamonStatsD, kamonScala, kamonAkka, kamonSystem)
   val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, 
 	  guava, cats, classutil, reflect, netty_tcnative, javassist, webjars)
   val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core, clump, linx)
