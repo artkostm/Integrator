@@ -19,7 +19,7 @@ import akka.stream.scaladsl.Source
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Publisher
 import akka.stream.scaladsl.Sink
-import akka.actor.ActorSystem
+import akka.actor.{Actor, ActorSystem, Props}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
 import akka.stream.Supervision
@@ -37,15 +37,18 @@ import com.artkostm.integrator.watcher.MonitorActor
 import com.artkostm.integrator.watcher.RegistryTypes.Callback
 import io.netty.util.ReferenceCountUtil
 import io.netty.handler.ssl.SslHandler
-
 import java.nio.file.StandardWatchEventKinds._
 
+import akka.event.Logging
+import kamon.trace.Tracer
+
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 @Sharable
-class HttpStaticFileRequestHandler extends ChannelInboundHandlerAdapter {
+class HttpStaticFileRequestHandler(system: ActorSystem) extends ChannelInboundHandlerAdapter {
   override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any): Unit = {
-    val file = new File("./static.pdf")
+    val file = new File("/Users/arttsiom.chuiko/git/Integrator/examples/static.pdf")
     val headers = new DefaultHttpHeaders(true)
     headers.add(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED)
     headers.add(HttpHeaderNames.CONTENT_TYPE, "application/pdf")
@@ -140,44 +143,44 @@ object TestRequestHandler2 extends ChannelInboundHandlerAdapter {
   }
 }
 
-@Sharable
-object HttpDuplex extends ChannelDuplexHandler with Publisher[HttpContent] {
-  implicit val system = ActorSystem() 
-  val decider: Supervision.Decider = {
-    case e: Exception =>
-      println(s"Exception handled, recovering stream: ${e.getMessage}, exception: $e")
-      Supervision.Restart
-    case some => 
-      println(s"UNEXPECTED: $some")
-      Supervision.Stop
-  }
-  implicit val materializer = ActorMaterializer(ActorMaterializerSettings(system).withSupervisionStrategy(decider))
-  
-  val source = Source.fromPublisher(this)
-      .map(_.content)
-      .to(Sink.foreach(ByteBufUtil.prettyHexDump(_)))
-  val result = source.run
-  var subscriber: Subscriber[_ >: HttpContent] = _
-  override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any) {
-    println(s"=========DUPLEX(CR): $msg - class ${msg.getClass.getName}")
-    if (msg.isInstanceOf[HttpContent]) {
-      println(s"BEFORE onNext: $msg")
-      subscriber.onNext(msg.asInstanceOf[HttpContent])
-    }
-    ctx.fireChannelRead(msg)
-  }
-  
-  override def write(ctx: ChannelHandlerContext, msg: scala.Any, promise: ChannelPromise) {
-    println(s"=========DUPLEX(W): $msg - class ${msg.getClass.getName}, promise - $promise - ${promise.getClass.getName}")
-    ctx.writeAndFlush(msg, promise)
-  }
-  
-  override def subscribe(sub: Subscriber[_ >: HttpContent]): Unit = {
-    println(s"Subscriber: $sub")
-    println(s"SELF: $this")
-    subscriber = sub
-  }
-
+//@Sharable
+object HttpDuplex {//extends ChannelDuplexHandler with Publisher[HttpContent] {
+//  implicit val system = ActorSystem()
+//  val decider: Supervision.Decider = {
+//    case e: Exception =>
+//      println(s"Exception handled, recovering stream: ${e.getMessage}, exception: $e")
+//      Supervision.Restart
+//    case some =>
+//      println(s"UNEXPECTED: $some")
+//      Supervision.Stop
+//  }
+//  implicit val materializer = ActorMaterializer(ActorMaterializerSettings(system).withSupervisionStrategy(decider))
+//
+//  val source = Source.fromPublisher(this)
+//      .map(_.content)
+//      .to(Sink.foreach(ByteBufUtil.prettyHexDump(_)))
+//  val result = source.run
+//  var subscriber: Subscriber[_ >: HttpContent] = _
+//  override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any) {
+//    println(s"=========DUPLEX(CR): $msg - class ${msg.getClass.getName}")
+//    if (msg.isInstanceOf[HttpContent]) {
+//      println(s"BEFORE onNext: $msg")
+//      subscriber.onNext(msg.asInstanceOf[HttpContent])
+//    }
+//    ctx.fireChannelRead(msg)
+//  }
+//
+//  override def write(ctx: ChannelHandlerContext, msg: scala.Any, promise: ChannelPromise) {
+//    println(s"=========DUPLEX(W): $msg - class ${msg.getClass.getName}, promise - $promise - ${promise.getClass.getName}")
+//    ctx.writeAndFlush(msg, promise)
+//  }
+//
+//  override def subscribe(sub: Subscriber[_ >: HttpContent]): Unit = {
+//    println(s"Subscriber: $sub")
+//    println(s"SELF: $this")
+//    subscriber = sub
+//  }
+//
   private[netty] def getRangeFromRequest(spec: String): Option[(Long, Long)] = {
     try {
       if (spec == null) {
@@ -210,10 +213,27 @@ object HttpDuplex extends ChannelDuplexHandler with Publisher[HttpContent] {
 }
 
 object ServerApp extends App {
-  val system = ActorSystem()
+  import kamon.Kamon
+  Kamon.start()
+  val system = ActorSystem("my-app")
   implicit val dispatcher = system.dispatcher
   val group = new NioEventLoopGroup(4, dispatcher)
   val allChannels = new DefaultChannelGroup(group.next())
+
+  class MyActor extends Actor {
+    val log = Logging(context.system, this)
+
+    def receive = {
+      case x: Int if x % 2 == 0 => log.info("EVEN")
+      case x: Int if x % 2 == 1 => log.info("ODD")
+      case _      => log.info("received unknown message")
+    }
+  }
+
+  object MyActor {
+    def props = Props(classOf[MyActor])
+  }
+
 //  val fileMonitorActor = system.actorOf(MonitorActor(concurrency = 2))
 //
 //  val modifyCallbackDirectory: Callback = { path => println(s"Something was modified in a directory: $path")}
@@ -225,9 +245,10 @@ object ServerApp extends App {
 //    callback = modifyCallbackDirectory)
 
   def start(): Unit = {
-    import kamon.Kamon
-    Kamon.start()
-    val testHandler = new HttpStaticFileRequestHandler()
+    Future {
+      (1 to 1000).foreach(system.actorOf(MyActor.props) ! _)
+    }
+    val testHandler = new HttpStaticFileRequestHandler(system)
     try {
       val bootstrap = new ServerBootstrap()
       bootstrap.group(group)
@@ -237,6 +258,9 @@ object ServerApp extends App {
         .localAddress(new InetSocketAddress(8189))
         .childHandler(new ChannelInitializer[SocketChannel] {
           override def initChannel(ch: SocketChannel) = {
+            Tracer.withNewContext("sample-trace") {
+              system.actorOf(MyActor.props) ! "something"
+            }
 //            HttpServerExpectContinueHandler
             ch.pipeline().addLast("compressor", new HttpContentCompressor)
             ch.pipeline().addLast("decoder", new HttpRequestDecoder(4096, 8192, 8192))
@@ -248,14 +272,16 @@ object ServerApp extends App {
             ch.pipeline().addLast("request-handler", testHandler)
             //ch.pipeline().addLast("request-duplex", HttpDuplex)
             //ch.pipeline().addLast("request-handler2", TestRequestHandler2)
+            Tracer.withNewContext("sample-trace") {
+              system.actorOf(MyActor.props) ! "test"
+            }
           }
         })
       val chFuture = bootstrap.bind().sync()
       chFuture.channel().closeFuture().sync()
     } finally {
       group.shutdownGracefully().sync()
-      type а = ChannelDuplexHandler
-      type b = DiskFileUpload
+      Kamon.shutdown()
     }
   }
 
