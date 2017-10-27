@@ -21,8 +21,21 @@ lazy val examples = (project in file("examples"))
   .settings(
     commonSettings,
     scalaVersion := "2.12.3",
-	  libraryDependencies += scalext,
-    libraryDependencies ++= kamonDeps
+	resolvers += Resolver.sonatypeRepo("releases"),
+    resolvers += Resolver.bintrayRepo("scalameta", "maven"),
+	addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M10" cross CrossVersion.full),
+	libraryDependencies += scalext,
+    libraryDependencies ++= kamonDeps,
+	libraryDependencies += "io.frees" %% "frees-core"               % "0.4.1",
+	libraryDependencies += "io.frees" %% "frees-core"               % "0.4.1",
+    libraryDependencies += "io.frees" %% "frees-effects"            % "0.4.1",
+	libraryDependencies += "io.frees" %% "frees-tagless"            % "0.4.1",
+	libraryDependencies += "io.frees" %% "frees-async"              % "0.4.1",
+	libraryDependencies += "io.frees" %% "frees-async-cats-effect"  % "0.4.1",
+	libraryDependencies += "io.frees" %% "frees-async-guava"        % "0.4.1",
+	libraryDependencies += "io.frees" %% "frees-cache"              % "0.4.1",
+	libraryDependencies += "io.frees" %% "frees-config"             % "0.4.1",
+	libraryDependencies += "io.frees" %% "frees-logging"            % "0.4.1"
   )
   .settings(
     mainClass in assembly := Some("com.artkostm.integrator.example.netty.ServerApp")
