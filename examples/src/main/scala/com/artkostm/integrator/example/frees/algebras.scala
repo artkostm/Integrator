@@ -29,9 +29,7 @@ import VkJsoup._
   def getLkey(doc: Document): FS[String]
 }
 
-case class LoginInfo(ac: String, fkey: String, sid: String) {
-  override def toString: String = s"{ac:$ac\nfkey:$fkey\nsid:$sid}"
-}
+case class LoginInfo(ac: String, fkey: String, sid: String)
 
 object Flymer {
   val Domain = "flymer.ru"
