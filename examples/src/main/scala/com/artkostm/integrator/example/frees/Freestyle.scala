@@ -25,7 +25,7 @@ object Freestyle extends App {
   
     for {
       userInput <- interaction.ask("Give me something with at least 3 chars and a number on it")
-      valid <- (validation.minSize(userInput, 3) |@| validation.hasNumber(userInput)).map(_ && _).freeS
+      valid <- (validation.minSize(userInput, 3), validation.hasNumber(userInput)).mapN(_ && _).freeS
       _ <- if (valid)
               interaction.tell(s"awesomesauce! '$userInput' is completely valid!") 
            else
