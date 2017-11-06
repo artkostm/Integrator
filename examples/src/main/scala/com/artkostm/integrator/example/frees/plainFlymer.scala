@@ -53,7 +53,7 @@ object plainFlymer extends App {
 
   val start = System.currentTimeMillis()
 
-  val future = attemptLogin("artkostm@gmail.com", "061994art")
+  val future = attemptLogin("@gmail", "")
 
   println(Await.result(future, Duration.Inf))
 
