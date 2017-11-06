@@ -4,14 +4,17 @@ import freestyle._
 
 object MainTests extends App {
     val emailSlot = Option(new EditText("artkostm@gmail.com"))
-    val passwordSlot = Option(new EditText("12345"))
-    
+    val passwordSlot = Option(new EditText("12302"))
+
     import freestyle.implicits._
-    import handlersOption._
+    import cats.instances.option._
+    implicit val h = handlersOption.validatorHandler
     
     val result: Option[Boolean] = program.validate[LoginViewValidation.Op](emailSlot, passwordSlot).interpret[Option]
     
     println(result)
+
+  println("": String)
 }
 
 class EditText(text: String) {
@@ -31,13 +34,11 @@ class EditText(text: String) {
 object program {
   def validate[F[_]](emailSlot: Option[EditText], passwordSlot: Option[EditText])(implicit LVV: LoginViewValidation[F]): FreeS[F, Boolean] = {
     import LVV._
-    import cats.implicits._
     
     for {
-//      email <- FreeS.liftFA(emailSlot)
-//      password <- FreeS.liftFA(passwordSlot)
-      result <- (validator.validateEmail(emailSlot.get.getText), validator.validatePassword(passwordSlot.get.getText)).mapN(_ && _).freeS
-    } yield result
+      isEmailValid <- validator.validateEmail(emailSlot.get.getText)
+      isPasswordValid <- validator.validatePassword(passwordSlot.get.getText)
+    } yield isEmailValid && isPasswordValid
   }
 }
 

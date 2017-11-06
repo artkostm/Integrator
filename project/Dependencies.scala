@@ -41,5 +41,6 @@ object Dependencies {
   val kamonDeps = Seq(aspectj, kamonCore, kamonStatsD, kamonScala, kamonAkka, kamonSystem)
   val coreDeps = Seq(cnfgs, akka_actor, akka_protobuf, akka_stream, netty_all, 
 	  guava, cats, classutil, reflect, netty_tcnative, javassist, webjars)
+
   val sandboxDeps = Seq(nd4j_platform, nd4s, scalnet, spark_core, clump, linx)
 }
