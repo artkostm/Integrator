@@ -48,7 +48,7 @@ object Fl extends App {
 
   var start = System.currentTimeMillis()
 
-  val res: Option[LoginInfo] = program.loginViaFlymer(("artkostm@gmail.com", "061994art")).interpret[Option]
+  val res: Option[LoginInfo] = program.loginViaFlymer(("m", "0")).interpret[Option]
 
   println(res)
 
